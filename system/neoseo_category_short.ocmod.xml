@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Category Short</name>
+	<version>1</version>
+	<code>neoseo_category_short</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+
+	<file path="admin/controller/setting/setting.php">
+		<operation>
+			<search><![CDATA[$data['token'] = $this->session->data['token'];]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Category Short - begin */
+		$data['entry_category_short'] = $this->language->get('entry_category_short');
+		$data['entry_category_short_help'] = $this->language->get('entry_category_short_help');
+
+		if (isset($this->request->post['config_category_short'])) {
+			$data['config_category_short'] = $this->request->post['config_category_short'];
+		} else {
+			$data['config_category_short'] = $this->config->get('config_category_short');
+		}
+		/* NeoSeo Category Short - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/setting/setting.tpl">
+		<operation>
+			<search><![CDATA[<label class="col-sm-2 control-label" for="input-robots"><span data-toggle="tooltip" title="<?php echo $help_robots; ?>"><?php echo $entry_robots; ?></span></label>]]></search>
+			<add position="before" offset="1"><![CDATA[  <!-- NeoSeo Category Short - begin -->
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="<?php echo $entry_category_short_help; ?>"><?php echo $entry_category_short; ?></span></label>
+                  <div class="col-sm-10">
+                    <?php if($config_category_short) { ?>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_category_short" value="1" checked="checked"/>
+                      <?php echo $text_yes; ?>
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_category_short" value="0"/>
+                      <?php echo $text_no; ?>
+                    </label>
+                    <?php } else { ?>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_category_short" value="1"/>
+                      <?php echo $text_yes; ?>
+                    </label>
+                    <label class="radio-inline">
+                      <input type="radio" name="config_category_short" value="0" checked="checked"/>
+                      <?php echo $text_no; ?>
+                    </label>
+                    <?php } ?>
+                  </div>
+                </div>
+  <!-- NeoSeo Category Short - end -->]]></add>
+		</operation>
+	</file>
+	<file path="admin/view/template/setting/setting.twig">
+		<operation>
+			<search><![CDATA[<label class="col-sm-2 control-label" for="input-robots"><span data-toggle="tooltip" title="{{ help_robots }}">{{ entry_robots }}</span></label>]]></search>
+			<add position="before" offset="1"><![CDATA[                <!-- NeoSeo Category Short - begin -->
+                <div class="form-group">
+                  <label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ entry_category_short_help }}">{{ entry_category_short }}</span></label>
+                  <div class="col-sm-10">
+                    <label class="radio-inline"> {% if config_category_short %}
+                        <input type="radio" name="config_category_short" value="1" checked="checked" />
+                        {{ text_yes }}
+                      {% else %}
+                        <input type="radio" name="config_category_short" value="1" />
+                        {{ text_yes }}
+                      {% endif %} </label>
+                    <label class="radio-inline"> {% if not config_category_short %}
+                        <input type="radio" name="config_category_short" value="0" checked="checked" />
+                        {{ text_no }}
+                      {% else %}
+                        <input type="radio" name="config_category_short" value="0" />
+                        {{ text_no }}
+                      {% endif %} </label>
+                  </div>
+                </div>
+                <!-- NeoSeo Category Short - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/language/*/setting/setting.php">
+		<operation>
+			<search>
+				<![CDATA[// Entry]]>
+			</search>
+			<add position="after">
+				<![CDATA[
+$_['entry_category_short']			 = 'Короткая категория:';
+$_['entry_category_short_help']		= 'Выволить только текущую категорию в ссылке /category/subcategory -> /subcategory (только для SeoPro)';
+			]]>
+			</add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/seo_pro.php">
+		<operation>
+			<search><![CDATA[$data['path'] = $this->getPathByCategory($category);]]></search>
+			<add position="replace"><![CDATA[
+					/* NeoSeo Category Short - begin */
+					if ($this->config->get('config_category_short')) {
+						$data['path'] = $category;
+					} else {
+						$data['path'] = $this->getPathByCategory($category);
+					}
+					/* NeoSeo Category Short - end */
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$path[$product_id] = $this->getPathByCategory($query->num_rows ? (int)$query->row['category_id'] : 0);]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Category Short - begin */
+			$path[$product_id] = ($query->num_rows ? ($this->config->get('config_category_short') ? (int)$query->row['category_id'] : $this->getPathByCategory((int)$query->row['category_id'])) : 0);
+			/* NeoSeo Category Short - end */
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/startup/seo_pro.php">
+		<operation>
+			<search><![CDATA[$data['path'] = $this->getPathByCategory($category);]]></search>
+			<add position="replace"><![CDATA[
+					/* NeoSeo Category Short - begin */
+					if ($this->config->get('config_category_short')) {
+						$data['path'] = $category;
+					} else {
+						$data['path'] = $this->getPathByCategory($category);
+					}
+					/* NeoSeo Category Short - end */
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$path[$product_id] = $this->getPathByCategory($query->num_rows ? (int)$query->row['category_id'] : 0);]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Category Short - begin */
+			$path[$product_id] = ($query->num_rows ? ($this->config->get('config_category_short') ? (int)$query->row['category_id'] : $this->getPathByCategory((int)$query->row['category_id'])) : 0);
+			/* NeoSeo Category Short - end */
+			]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/category.php">
+		<operation>
+			<search><![CDATA[$category_id = (int)array_pop($parts);]]></search>
+			<add position="after"><![CDATA[
+			/* NeoSeo Category Short - begin */
+			if($this->config->get('config_category_short') && count($parts) === 0){
+				$reversed_bc = array();
+				$category_info = $this->model_catalog_category->getCategory($category_id);
+				while($category_info['parent_id'] > 0){
+					$category_info = $this->model_catalog_category->getCategory($category_info['parent_id']);
+					$reversed_bc[] = array(
+						'text' => $category_info['name'],
+						'href' => $this->url->link('product/category', 'path=' . $category_info['category_id']. $url)
+					);
+				}
+				$reversed_bc = array_reverse($reversed_bc);
+				$data['breadcrumbs'] = array_merge($data['breadcrumbs'] ,$reversed_bc);
+			} else
+			/* NeoSeo Category Short - end */]]></add>
+		</operation>
+	</file>
+
+</modification>

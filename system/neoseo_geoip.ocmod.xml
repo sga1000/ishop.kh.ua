@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo GeoIp</name>
+    <version>1.0</version>
+    <code>neoseo-geoip</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua/neoseo-geoip</link>
+
+    <file path="catalog/controller/common/header.php">
+        <operation>
+            <search><![CDATA[$data['cart'] = $this->load->controller('common/cart');]]></search>
+            <add position="after">
+                <![CDATA[
+		/* NeoSeo Geoip - begin */
+		if($this->config->get('neoseo_geoip_status') == 1){
+			if((file_exists(DIR_APPLICATION . 'model/module/neoseo_seo_languages.php') || file_exists(DIR_APPLICATION . 'model/module/soforp_seo_languages.php')) && isset($this->session->data['neoseo_geoip']['redirect'])){
+				$detected = '';
+				if(file_exists(DIR_APPLICATION . 'model/module/neoseo_seo_languages.php')){
+					$detected = 'neoseo';
+				}
+				if(file_exists(DIR_APPLICATION . 'model/module/soforp_seo_languages.php')){
+					$detected = 'soforp';
+				}
+				if($detected == '') {
+					unset($this->session->data['neoseo_geoip']['redirect']);
+				} else {
+					$this->load->model('module/' . $detected . '_seo_languages');
+					$lang = $this->session->data['neoseo_geoip']['redirect'];
+					unset($this->session->data['neoseo_geoip']['redirect']);
+					$base_url = rtrim(($this->request->server['HTTPS'] ? HTTPS_SERVER : HTTP_SERVER), "/");
+					$this->response->redirect($this->{'model_module_' . $detected . '_seo_languages'}->insertLanguage($base_url ,$lang));
+				}
+			}
+			$this->language->load('module/neoseo_geoip');
+			if(isset($this->session->data['neoseo_geoip']['region_name'])){
+				$data['detected_region'] = $this->session->data['neoseo_geoip']['region_name'];
+				$data['select_enother'] = $this->language->get('text_region_is');
+			} else {
+				$data['detected_region'] = $this->language->get('text_not_detected');
+				$data['select_enother'] = $this->language->get('text_region_is');
+			}
+
+			$data['text_not_detected'] = $this->language->get('text_not_detected');
+			$data['text_region_notice'] = $this->language->get('text_region_notice');
+
+			$data['text_selected_region'] = $this->language->get('text_selected_region');
+
+			$data['oc_region'] = isset($this->session->data['neoseo_geoip']['oc_zone'])?$this->session->data['neoseo_geoip']['oc_zone']:0;
+			$data['oc_country'] = isset($this->session->data['neoseo_geoip']['oc_country'])?$this->session->data['neoseo_geoip']['oc_country']:0;
+
+			$this->load->model('module/neoseo_geoip');
+
+			$data['allow_language_selector'] = $this->config->get('neoseo_geoip_allow_change_language');
+			$data['allow_currency_selector'] = $this->config->get('neoseo_geoip_allow_change_currency');
+
+			$data['text_language_selector'] = "";
+			$data['text_currency_selector'] = "";
+			$data['language_selector'] = "";
+			$data['currency_selector']  = "";
+			$data['language_notice'] = "";
+			$data['currency_notice']  = "";
+
+			if($data['allow_language_selector']){
+				$data['text_language_selector'] = $this->language->get('text_language_selector');
+				$data['language_selector'] = $this->model_module_neoseo_geoip->getLangSelect();
+				$data['language_notice'] =  $this->language->get('text_language_notice') . $this->session->data['language'];
+			}
+
+			if($data['allow_currency_selector']){
+				$data['text_currency_selector'] = $this->language->get('text_currency_selector');
+				$data['currency_selector'] = $this->model_module_neoseo_geoip->getCurSelect();
+				$data['currency_notice'] =  $this->language->get('text_currency_notice') . $this->session->data['currency'];
+			}
+
+
+			$data['text_select_region'] = $this->language->get('text_select_region');
+			
+			$data['text_btn_cancel'] = $this->language->get('text_btn_cancel');
+			$data['text_region_is'] = $this->language->get('text_region_is');
+			if(!isset($this->session->data['neoseo_geoip']['show_popup']))$this->session->data['neoseo_geoip']['show_popup'] = 1;
+			$data['show_popover'] = $this->session->data['neoseo_geoip']['show_popup'];
+			$this->session->data['neoseo_geoip']['show_popup']  = 0;
+			$data['text_detect'] = $this->language->get('text_detect');
+			$data['text_ok'] = $this->language->get('text_ok');
+			$data['text_region'] = $this->language->get('text_region');
+
+			if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/module/neoseo_geoip.tpl')) {
+				$data['neoseo_geoip_out'] = $this->load->view($this->config->get('config_template') . '/template/module/neoseo_geoip.tpl', $data);
+			} else {
+				$data['neoseo_geoip_out'] = $this->load->view('default/template/module/neoseo_geoip.tpl', $data);
+			}
+		}
+		/* NeoSeo Geoip - end */
+                ]]>
+            </add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/common/header.tpl">
+        <operation>
+            <search><![CDATA[<?php echo $language; ?>]]></search>
+            <add position="after"><![CDATA[
+    <!-- NeoSeo GeoiP Start -->
+    <?php if(isset($neoseo_geoip_out)) { ?><div class="pull-left"><?php echo $neoseo_geoip_out; ?></div><?php } ?>
+    <!-- NeoSeo GeoiP End -->
+]]></add>
+        </operation>
+    </file>
+
+    <file path="system/library/customer.php">
+        <operation>
+            <search><![CDATA[if (isset($this->session->data['customer_id'])) {]]></search>
+            <add position="before"><![CDATA[
+		/* NeoSeo Geoip - begin */
+		if($this->config->get('neoseo_geoip_status') == 1){
+			$this->load = $registry->get('load');
+			$this->load->model('module/neoseo_geoip');
+			$this->model_module_neoseo_geoip = $registry->get('model_module_neoseo_geoip');
+			$customer_group_by_ip = $this->model_module_neoseo_geoip->detectByIp();
+			if($customer_group_by_ip){
+				$this->config->set('config_customer_group_id', $customer_group_by_ip);
+			}
+		}
+		/* NeoSeo Geoip - end */]]></add>
+        </operation>
+    </file>
+
+</modification>

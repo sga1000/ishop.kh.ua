@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Optimizer</name>
+	<version>2.0</version>
+	<code>neoseo_optimizer</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+
+	<file path="system/engine/action.php">
+		<operation>
+			<search><![CDATA[public function execute($registry) {]]></search>
+			<add position="replace"><![CDATA[	public function getInfo(){
+		return "action[" . $this->file . "]";
+	}
+
+	public function execute($registry) {]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$controller = new $class($registry);]]></search>
+			<add position="before"><![CDATA[			if ( isset($GLOBALS['profiler']) ) {
+				$begin = $GLOBALS['profiler']->child_controller_started($class);
+			}
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[return call_user_func(array($controller, $this->method), $this->args);]]></search>
+			<add position="replace"><![CDATA[			$result = call_user_func(array($controller, $this->method), $this->args);
+			if ( isset($GLOBALS['profiler']) ) {
+				$GLOBALS['profiler']->child_controller_finished($class, $begin);
+			}
+			return $result;]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[return false;]]></search>
+			<add position="before"><![CDATA[				if ( isset($GLOBALS['profiler']) ) {
+					$GLOBALS['profiler']->child_controller_finished($class, $begin);
+				}]]></add>
+		</operation>
+	</file>
+
+	<file path="system/engine/loader.php">
+		<operation>
+			<search><![CDATA[$controller = new $class($this->registry);]]></search>
+			<add position="before"><![CDATA[		if( isset($GLOBALS['profiler']) ) {
+			$begin = $GLOBALS['profiler']->object_init_started("controller $class");
+		}]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$controller = new $class($this->registry);]]></search>
+			<add position="after"><![CDATA[		if( isset($GLOBALS['profiler']) ) {
+			$GLOBALS['profiler']->object_init_finished("controller $class", $begin);
+		}]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$output = call_user_func(array($controller, $method), $data);]]></search>
+			<add position="before"><![CDATA[			if( isset($GLOBALS['profiler']) ) {
+				$begin = $GLOBALS['profiler']->child_controller_started($class);
+			}]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$output = call_user_func(array($controller, $method), $data);]]></search>
+			<add position="after"><![CDATA[			if( isset($GLOBALS['profiler']) ) {
+				$GLOBALS['profiler']->child_controller_finished($class, $begin);
+			}]]></add>
+		</operation>
+	</file>
+
+	<file path="system/library/db.php">
+		<operation>
+			<search><![CDATA[return $this->db->query($sql);]]></search>
+			<add position="replace"><![CDATA[		$begin = microtime(true);
+		$result = $this->db->query($sql);
+
+		if ( isset($GLOBALS['profiler']) ) {
+			$GLOBALS['profiler']->query_finished($sql, $begin);
+		}
+
+		return $result;]]></add>
+		</operation>
+	</file>
+
+	<file path="system/library/response.php">
+		<operation>
+			<search><![CDATA[$output = $this->output;]]></search>
+			<add position="replace"><![CDATA[/* NeoSeo Optimizer - begin */
+				if (!defined('HTTP_CATALOG') && is_file(DIR_SYSTEM . 'storage/neoseo_optimizer_enabled')) {
+					require_once DIR_APPLICATION . 'model/tool/neoseo_optimizer.php';
+					$optimizer = new ModelToolNeoseoOptimizer(array());
+					$output = $optimizer->process($this->output);
+				} else {
+					$output = $this->output;
+				}
+				/* NeoSeo Optimizer - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="system/library/image.php">
+		<operation>
+			<search><![CDATA[
+    function getFile
+            ]]></search>
+			<add position="before"><![CDATA[	/* NeoSeo Optimizer - begin */
+	protected function log2($message)
+	{
+		file_put_contents(DIR_LOGS . "neoseo_optimizer.log", date("Y-m-d H:i:s ") . $message . "\r\n", FILE_APPEND);
+	}
+
+	public function delete_dirty_data($result){
+
+		while( true ) {
+			$result2 = preg_replace("#(\r).*(\r)#", "\r", $result);
+			if( $result2 == $result ) {
+				$result = $result2;
+				break;
+			}
+			$result = $result2;
+		}
+		return $result;
+	}
+
+	public function optimize($file, $quality = 85)
+	{
+		$info = pathinfo($file);
+		$extension = strtolower($info['extension']);
+
+		if ($extension == 'jpeg' || $extension == 'jpg') {
+			$cmd = 'jpegoptim -m' . $quality . ' --all-progressive --strip-all "' . $file . '"';
+		} elseif ($extension == 'png') {
+			$cmd = 'pngout -y "' . $file . '"';
+		} else {
+			$cmd = '';
+		}
+
+		if( $cmd ) {
+			if( method_exists($this,"log2") ) {
+			    //$this->log2($cmd);
+			}
+			$result = shell_exec($cmd);
+			if( method_exists($this,"log2") ) {
+				$result = $this->delete_dirty_data($result);
+			    $this->log2($result);
+			}
+		}
+
+	}
+	/* NeoSeo Optimizer - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[
+    imagedestroy($this->image);
+            ]]></search>
+			<add position="after" ><![CDATA[	/* NeoSeo Optimizer - begin */
+	$this->optimize($file);
+	/* NeoSeo Optimizer - end */]]></add>
+		</operation>
+
+	</file>
+
+	<file path="catalog/controller/common/footer.php">
+		<operation>
+			<search><![CDATA[$data['scripts'] = $this->document->getScripts('footer');]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Optimizer - begin */
+				if ($this->config->get('neoseo_optimizer_img_lazy_load')) {
+					$data['blazy'] = true;
+				}else{
+					$data['blazy'] = false;
+				}
+			/* NeoSeo Optimizer - end */ ]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/common/footer.tpl">
+		<operation>
+			<search><![CDATA[<footer>]]></search>
+			<add position="after"><![CDATA[
+			<?php if (isset($blazy) && $blazy) { ?>
+				<script src="catalog/view/javascript/blazy.min.js" type="text/javascript" ></script>
+    			<script>
+					var bLazy = new Blazy({
+							breakpoints: [{
+						}]
+						  , success: function(element){
+							setTimeout(function(){
+							// We want to remove the loader gif now.
+							// First we find the parent container
+							// then we remove the "loading" class which holds the loader image
+							var parent = element.parentNode;
+							parent.className = parent.className.replace(/\bloading\b/,'');
+							}, 200);
+							}
+					   });
+				</script>
+				<?php } ?>
+			]]></add>
+		</operation>
+	</file>
+
+</modification>

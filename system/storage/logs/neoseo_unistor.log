@@ -1,0 +1,8 @@
+2021-11-02 21:48:04 - Демо-данные очищены
+2021-11-02 21:48:04 - Добавлены стартовые SEO-url
+2021-11-03 08:27:04 - Демо-данные очищены
+2021-11-03 08:27:04 - Добавлены стартовые SEO-url
+2021-11-11 16:52:12 - Не удалось выполнить компиляцию: parse error: failed at `$top-menu-background-color: ##01b7cc;    // Top BGColor` /home/admdodo/ishop.kh.ua/www/catalog/view/theme/neoseo_unistor/stylesheet/neoseo_unistor_parameters.scss on line 368
+2021-11-11 16:52:57 - Не удалось выполнить компиляцию: parse error: failed at `$top-menu-background-color: ##01b7cc;    // Top BGColor` /home/admdodo/ishop.kh.ua/www/catalog/view/theme/neoseo_unistor/stylesheet/neoseo_unistor_parameters.scss on line 368
+2022-08-16 11:27:55 - Не удалось выполнить компиляцию: expecting color: failed at `background: lighten($button-color, 10%);` /home/admdodo/ishop.kh.ua/www/catalog/view/theme/neoseo_unistor/stylesheet/neoseo_filter.scss on line 831
+2022-08-16 11:29:04 - Не удалось выполнить компиляцию: expecting color: failed at `background: lighten($button-color, 10%);` /home/admdodo/ishop.kh.ua/www/catalog/view/theme/neoseo_unistor/stylesheet/neoseo_filter.scss on line 831

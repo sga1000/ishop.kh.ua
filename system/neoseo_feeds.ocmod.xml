@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>NeoSeo Feeds</name>
+	<code>neoseo_feeds</code>
+	<version>1.0</version>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+	<file path="admin/controller/catalog/category.php">
+		<operation>
+			<search>
+				<![CDATA[		$data['tab_design'] = $this->language->get('tab_design')]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$data['tab_feeds'] = $this->language->get('tab_feeds');
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search index="1">
+				<![CDATA[        $data['header'] = $this->load->controller('common/header')]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$widget_data = array(
+		    'type' => 'category',
+            'arg' => $this->request->get['category_id'],
+        );
+
+        $data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/getWidget', $widget_data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/controller/catalog/neoseo_filter_pages.php">
+		<operation>
+			<search index="1">
+				<![CDATA[
+		$data['header'] = $this->load->controller('common/header')]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$widget_data = array(
+			'type' => 'seofilter',
+			'arg' => $data,
+		);
+
+		$data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/getWidget', $widget_data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/controller/common/header.php">
+		<operation>
+			<search>
+				<![CDATA[        $data['description'] = $this->document->getDescription()]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+        $this->document->addScript('view/javascript/neoseo_feeds.js');
+        $this->document->addScript('view/javascript/jquery-alerts/jquery.alerts.js');
+        $this->document->addStyle('view/javascript/jquery-alerts/jquery.alerts.css');
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[            $this->load->model('setting/store')]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+            $data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/getNav');
+			/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/controller/error/permission.php">
+		<operation>
+			<search>
+				<![CDATA[				'common/forgotten']]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+				'feed/neoseo',
+				/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/language/russian/russian.php">
+		<operation>
+			<search>
+				<![CDATA[$_['tab_google']                    = 'Google']]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+$_['tab_feeds']                     = 'Экспорт';
+/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/model/catalog/category.php">
+		<operation>
+			<search>
+				<![CDATA[		$this->event->trigger('post.admin.category.add']]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$data['category_id'] = $category_id;
+        $data['type'] = 'category';
+        $data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/setData', $data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[		$this->event->trigger('post.admin.category.edit']]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+        $data['category_id'] = $category_id;
+        $data['type'] = 'category';
+        $data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/setData', $data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/model/catalog/neoseo_filter_pages.php">
+		<operation>
+			<search>
+				<![CDATA[
+		return $page_id]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$data['page_id'] = $page_id;
+		$data['type'] = 'seofilter';
+		$data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/setData', $data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[$this->event->trigger('post.admin.catalog.neoseo_filter_pages.edit', $page_id);]]>
+			</search>
+			<add position="after">
+				<![CDATA[/* NeoSeo Feeds - begin */
+		$data['page_id'] = $page_id;
+		$data['type'] = 'seofilter';
+		$data['neoseo_feeds'] = $this->load->controller('feed/neoseo_feeds/setData', $data);
+		/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="system/storage/modification/admin/language/russian/russian.php">
+		<operation>
+			<search>
+				<![CDATA[$_['tab_google']                    = 'Google']]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo Feeds - begin */
+$_['tab_feeds']                     = 'Экспорт';
+/* NeoSeo Feeds - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/view/template/catalog/category_form.tpl">
+		<operation>
+			<search>
+				<![CDATA[            <li><a href="#tab-design" data-toggle="tab"><?php echo $tab_design; ?></a></li>]]>
+			</search>
+			<add position="before">
+				<![CDATA[<!-- NeoSeo Feeds - begin -->
+            <li><a href="#tab-feeds" data-toggle="tab"><?php echo $tab_feeds; ?></a></li>
+            <!-- NeoSeo Feeds - end -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[            <div class="tab-pane" id="tab-design">]]>
+			</search>
+			<add position="before">
+				<![CDATA[<!-- NeoSeo Feeds - begin -->
+            <div class="tab-pane" id="tab-feeds">
+              <?php echo $neoseo_feeds; ?>
+            </div>
+            <!-- NeoSeo Feeds - end -->]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/view/template/catalog/neoseo_filter_pages_form.tpl">
+		<operation>
+			<search>
+				<![CDATA[</form>]]>
+			</search>
+			<add position="before" offset="2">
+				<![CDATA[<!-- NeoSeo Feeds - begin -->
+						<?php echo $neoseo_feeds; ?>
+						<!-- NeoSeo Feeds - end -->]]>
+			</add>
+		</operation>
+	</file>
+	<file path="admin/view/template/common/header.tpl">
+		<operation>
+			<search>
+				<![CDATA[    <li class="dropdown"><a class="dropdown-toggle" data-toggle="dropdown"><span class="label label-danger pull-left"><?php echo $alerts; ?></span>]]>
+			</search>
+			<add position="before">
+				<![CDATA[<!-- NeoSeo Feeds - begin -->
+    <?php echo $neoseo_feeds; ?>
+    <!-- NeoSeo Feeds - end -->]]>
+			</add>
+		</operation>
+	</file>
+</modification>

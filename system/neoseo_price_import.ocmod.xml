@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Price Import</name>
+	<version>1.0</version>
+	<code>neoseo-price-import</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua/neoseo-price-import</link>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['text_backup']]]></search>
+			<add position="after"><![CDATA[
+				/* NeoSeo Price Import - begin */
+				if( $this->user->hasPermission('access','tool/neoseo_price_import') && isset($this->session->data['token']) ) {
+					$this->language->load("tool/neoseo_price_import");
+					if( $this->config->get("neoseo_price_import_status") ) {
+						$data['neoseo_price_import_status'] = $this->config->get("neoseo_price_import_status");
+						$data['text_neoseo_price_import'] = $this->language->get("text_neoseo_price_import");
+						$data['neoseo_price_import'] = $this->url->link('tool/neoseo_price_import', 'token=' . $this->session->data['token'], 'SSL');
+					}
+				}
+				/* NeoSeo Price Import - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<a class="parent"><?php echo $text_attribute; ?>]]></search>
+			<add position="before"><![CDATA[
+      <?php /* NeoSeo Price Import - begin */?>
+      <?php if( isset($neoseo_price_import_status) && $neoseo_price_import_status == 1) { ?>
+      <li><a href="<?php echo $neoseo_price_import; ?>"><?php echo $text_neoseo_price_import; ?></a></li>
+      <?php } ?>
+      <?php /* NeoSeo Price Import - begin */?>]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/language/ukrainian/common/menu.php">
+		<operation>
+			<search><![CDATA[$_['text_analytics']]></search>
+			<add position="after"><![CDATA[
+/* NeoSeo Price Import - begin */
+$_['text_neoseo_price_import']              = 'Обновление цен';
+/* NeoSeo Price Import - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/language/english/common/menu.php">
+		<operation>
+			<search><![CDATA[$_['text_analytics']]></search>
+			<add position="after"><![CDATA[
+/* NeoSeo Price Import - begin */
+$_['text_neoseo_price_import']              = 'Обновление цен';
+/* NeoSeo Price Import - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/language/russian/common/menu.php">
+		<operation>
+			<search><![CDATA[$_['text_analytics']]></search>
+			<add position="after"><![CDATA[
+/* NeoSeo Price Import - begin */
+$_['text_neoseo_price_import']              = 'Обновление цен';
+/* NeoSeo Price Import - end */]]></add>
+		</operation>
+	</file>
+
+</modification>

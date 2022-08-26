@@ -1,0 +1,237 @@
+<modification>
+	<name>NeoSeo Product Bundles</name>
+	<version>1.0</version>
+	<code>neoseo_product_bundles</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[$text_recurring]]></search>
+			<add position="after"><![CDATA[
+		<!-- /* NeoSeo Product Bundles - begin */ -->
+		<?php if (isset($neoseo_product_bundles)) { ?>
+		<li><a href="<?php echo $neoseo_product_bundles; ?>"><?php echo $text_neoseo_product_bundles; ?></a></li>
+		<?php } ?>
+		<!-- /* NeoSeo Product Bundles - end */ -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[return $this->load->view('common/menu.tpl', $data);]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1) {
+				$data['neoseo_product_bundles'] = $this->url->link('catalog/neoseo_product_bundles', 'token=' . $this->session->data['token'], 'SSL');
+				$this->load->language('module/neoseo_product_bundles_module_menu');
+				$data['text_neoseo_product_bundles'] =$this->language->get('text_neoseo_product_bundles');
+			}
+		/* NeoSeo Product Bundles - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[$this->event->trigger('post.admin.product.delete', $product_id);]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1) {
+				$this->db->query("DELETE FROM " . DB_PREFIX . "product_bundles_p2p_name where bundle_id in (SELECT id FROM `" . DB_PREFIX . "product_bundles_p2b` where product_id = " . (int)$product_id . " )");
+				$this->db->query("DELETE FROM " . DB_PREFIX . "product_bundles_p2p where bundle_id in (SELECT id FROM `" . DB_PREFIX . "product_bundles_p2b` where product_id = " . (int)$product_id . " )");
+				$this->db->query("DELETE FROM " . DB_PREFIX . "product_bundles_p2b WHERE product_id=" . (int)$product_id);
+				$this->db->query("DELETE FROM " . DB_PREFIX . "product_bundles_p2p WHERE product_id=" . (int)$product_id);
+			}
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/sale/order.php">
+		<operation>
+			<search><![CDATA['product_id' => $product['product_id'],]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				'bundle_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_id'] : 0,
+				'bundle_action_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_action_id'] : 0,
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/sale/order_form.tpl">
+		<operation>
+			<search><![CDATA[<input type="hidden" name="product[<?php echo $product_row; ?>][product_id]" value="<?php echo $order_product['product_id']; ?>" />]]></search>
+			<add position="after"><![CDATA[
+		<!-- NeoSeo Product Bundles - begin -->
+				<input type="hidden" name="product[<?php echo $product_row; ?>][bundle_id]" value="<?php echo $order_product['bundle_id']; ?>" />
+				<input type="hidden" name="product[<?php echo $product_row; ?>][bundle_action_id]" value="<?php echo $order_product['bundle_action_id']; ?>" />
+		<!-- NeoSeo Product Bundles - end -->
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/cart.php">
+		<operation>
+			<search><![CDATA[$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id);]]></search>
+			<add position="replace"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				if ($this->config->get('neoseo_product_bundles_status') == 1) {
+					$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id,isset($this->request->post['bundle_id'])?$this->request->post['bundle_id']:0,isset($this->request->post['bundle_action_id'])?$this->request->post['bundle_action_id']:0);
+				} else {
+					$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id);
+				}
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+			<search><![CDATA[$order_product_id = $this->db->getLastId();]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1 && isset($product['bundle_id']) && isset($product['bundle_action_id'])) {
+				$this->db->query("UPDATE " . DB_PREFIX . "order_product SET bundle_id = '" . (int)$product['bundle_id'] . "' WHERE order_product_id = " . (int)$order_product_id);
+				$this->db->query("UPDATE " . DB_PREFIX . "order_product SET bundle_action_id = '" . (int)$product['bundle_action_id'] . "' WHERE order_product_id = " . (int)$order_product_id);
+			}
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/api/order.php">
+		<operation>
+			<search><![CDATA['product_id' => $product['product_id'],]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				'bundle_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_id'] : 0,
+				'bundle_action_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_action_id'] : 0,
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/neoseo_checkout.php">
+		<operation>
+			<search><![CDATA['product_id' => $product['product_id'],]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				'bundle_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_id'] : 0,
+				'bundle_action_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_action_id'] : 0,
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/api/cart.php">
+		<operation>
+			<search><![CDATA['product_id' => $product['product_id'],]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				'bundle_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_id'] : 0,
+				'bundle_action_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_action_id'] : 0,
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->cart->add($product['product_id'], $product['quantity'], $option);]]></search>
+			<add position="replace"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				if ($this->config->get('neoseo_product_bundles_status') == 1) {
+					if(!isset($product['bundle_id'])){
+						$product['bundle_id'] = 0;
+					}
+					if(!isset($product['bundle_action_id'])){
+						$product['bundle_action_id'] = 0;
+					}
+					$this->cart->add($product['product_id'], $product['quantity'], $option,0,$product['bundle_id'],$product['bundle_action_id']);
+				} else {
+					$this->cart->add($product['product_id'], $product['quantity'], $option);
+				}
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/confirm.php">
+		<operation>
+			<search><![CDATA['price'      => $product['price'],]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+				'bundle_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_id'] : 0,
+				'bundle_action_id' => $this->config->get('neoseo_product_bundles_status') == 1 ? $product['bundle_action_id'] : 0,
+		/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="system/library/cart.php">
+		<operation>
+			<search><![CDATA[public function add($product_id, $quantity = 1, $option = array(), $recurring_id = 0) {]]></search>
+			<add position="replace"><![CDATA[
+		/* NeoSeo Product Bundles - begin */
+		public function add($product_id, $quantity = 1, $option = array(), $recurring_id = 0,$bundle_id = 0, $bundle_action_id = 0) { /* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "cart WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "'");]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1) {
+				$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "cart WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "' and bundle_id = '".(int)$bundle_id."' and bundle_action_id = '".(int)$bundle_action_id."'");
+			} else {
+				$query = $this->db->query("SELECT COUNT(*) AS total FROM " . DB_PREFIX . "cart WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "'");
+			}
+			/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$this->db->query("INSERT " . DB_PREFIX . "cart SET customer_id = '" . (int)$this->customer->getId() . "', session_id = '" . $this->db->escape($this->session->getId()) . "', product_id = '" . (int)$product_id . "', recurring_id = '" . (int)$recurring_id . "', `option` = '" . $this->db->escape(json_encode($option)) . "', quantity = '" . (int)$quantity . "', date_added = NOW()");]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1) {
+				$this->db->query("INSERT " . DB_PREFIX . "cart SET customer_id = '" . (int)$this->customer->getId() . "', session_id = '" . $this->db->escape($this->session->getId()) . "', product_id = '" . (int)$product_id . "', recurring_id = '" . (int)$recurring_id . "', `option` = '" . $this->db->escape(json_encode($option)) . "', quantity = '" . (int)$quantity . "', date_added = NOW(), bundle_id = '".(int)$bundle_id."', bundle_action_id = '".(int)$bundle_action_id."'");
+			} else {
+				$this->db->query("INSERT " . DB_PREFIX . "cart SET customer_id = '" . (int)$this->customer->getId() . "', session_id = '" . $this->db->escape($this->session->getId()) . "', product_id = '" . (int)$product_id . "', recurring_id = '" . (int)$recurring_id . "', `option` = '" . $this->db->escape(json_encode($option)) . "', quantity = '" . (int)$quantity . "', date_added = NOW()");
+			}
+			/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$this->db->query("UPDATE " . DB_PREFIX . "cart SET quantity = (quantity + " . (int)$quantity . ") WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "'");]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Product Bundles - begin */
+			if ($this->config->get('neoseo_product_bundles_status') == 1) {
+				$this->db->query("UPDATE " . DB_PREFIX . "cart SET quantity = (quantity + " . (int)$quantity . ") WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "' and bundle_id = '".(int)$bundle_id."' and bundle_action_id = '".(int)$bundle_action_id."'");
+			} else {
+				$this->db->query("UPDATE " . DB_PREFIX . "cart SET quantity = (quantity + " . (int)$quantity . ") WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "' AND product_id = '" . (int)$product_id . "' AND recurring_id = '" . (int)$recurring_id . "' AND `option` = '" . $this->db->escape(json_encode($option)) . "'");
+			}
+			/* NeoSeo Product Bundles - end */
+		]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA['cart_id'         => $cart['cart_id'],]]></search>
+			<add position="after"><![CDATA[					/* NeoSeo Product Bundles - begin */
+					'bundle_id'       => $this->config->get('neoseo_product_bundles_status') == 1 ? $cart['bundle_id'] : 0,
+					'bundle_action_id'=> $this->config->get('neoseo_product_bundles_status') == 1 ? $cart['bundle_action_id'] : 0,
+					/* NeoSeo Product Bundles - end */]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$product_data[] = array(]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Product Bundles - begin */
+				if($this->config->get('neoseo_product_bundles_status') == 1 && $this->config->get('neoseo_product_bundles_price_type') == 'clear_price' && isset($cart['bundle_id']) && $cart['bundle_id'] > 0){
+					$main_product_check = $this->db->query("SELECT product_id from " . DB_PREFIX . "product_bundles_p2b WHERE bundle_id =" .(int)$cart['bundle_id']);
+					if($main_product_check->num_rows && $main_product_check->row['product_id'] != $product_query->row['product_id']){
+						$price = $product_query->row['price'];
+					}
+				}
+				/* NeoSeo Product Bundles - end */]]></add>
+		</operation>
+	</file>
+</modification>

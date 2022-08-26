@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo CashMemo</name>
+    <version>1.0</version>
+    <code>neoseo-cash-memo</code>
+    <author>Alexander Sorokin</author>
+    <link>http://seomag.com.ua/moduli/moduli-obrabotki-zakazov/neoseo-cash-memo</link>
+
+    <file path="admin/controller/sale/order.php">
+        <operation>
+            <search><![CDATA[$data['button_invoice_print']]]></search>
+            <add position="after"><![CDATA[
+            /* NeoSeo CashMemo - begin */
+            $this->language->load('sale/neoseo_cash_memo_order');
+		    $data['button_neoseo_cash_memo'] = $this->language->get('button_neoseo_cash_memo');
+		    $data['neoseo_cash_memo_replace_status'] = $this->config->get('neoseo_cash_memo_replace_status');
+
+		    $data['neoseo_cash_memo_invoice_status'] = $this->config->get('neoseo_cash_memo_invoice_status');
+		    $data['button_neoseo_product_order'] = $this->language->get('button_neoseo_product_order');
+		    $data['neoseo_cash_memo_product_order_status'] = $this->config->get('neoseo_cash_memo_product_order');
+            if( isset( $this->request->get['order_id'] ) ) {
+		        $data['neoseo_cash_memo'] = $this->url->link('sale/neoseo_cash_memo', 'token=' . $this->session->data['token'] . '&order_id=' . $this->request->get['order_id'], 'SSL');
+		        $data['neoseo_cash_memo_product_order'] = $this->url->link('sale/neoseo_cash_memo', 'token=' . $this->session->data['token'] . '&order_id=' . $this->request->get['order_id'] . '&product_order=1', 'SSL');
+		    } else {
+		        $data['neoseo_cash_memo'] = $this->url->link('sale/neoseo_cash_memo', 'token=' . $this->session->data['token'], 'SSL');
+		        $data['neoseo_cash_memo_product_order'] = $this->url->link('sale/neoseo_cash_memo', 'token=' . $this->session->data['token'] . '&product_order=1', 'SSL');
+		    }
+
+
+		    if ( $data['neoseo_cash_memo_replace_status'] ) {
+		        $data['invoice'] = $this->url->link('sale/neoseo_cash_memo', 'token=' . $this->session->data['token'], 'SSL');
+		        $data['button_invoice_print'] = $data['button_neoseo_cash_memo'];
+		    }
+            /* NeoSeo CashMemo - end */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/sale/order_info.tpl">
+        <operation>
+            <search><![CDATA[<a href="<?php echo $invoice; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_invoice_print; ?>" class="btn btn-info"><i class="fa fa-print"></i></a>]]></search>
+            <add position="replace"><![CDATA[
+            <?php if($neoseo_cash_memo_invoice_status){ ?>
+                <a href="<?php echo $neoseo_cash_memo; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_neoseo_cash_memo; ?>" class="btn btn-info"><i class="fa fa-print"></i></a><?php if ( $neoseo_cash_memo_replace_status == 0 ) { ?><a href="<?php echo $invoice; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_invoice_print; ?>" class="btn btn-info"><i class="fa fa-print"></i></a><?php } ?>
+            <?php } ?>
+            <?php if($neoseo_cash_memo_product_order_status){ ?>
+            <a href="<?php echo $neoseo_cash_memo_product_order; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_neoseo_product_order; ?>" class="btn btn-info"><i class="fa fa-list-alt"></i></a>
+            <?php } ?>
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/sale/order_list.tpl">
+        <operation>
+            <search><![CDATA[<button type="submit" id="button-invoice" form="form-order" formaction="<?php echo $invoice; ?>" data-toggle="tooltip" title="<?php echo $button_invoice_print; ?>" class="btn btn-info"><i class="fa fa-print"></i></button>]]></search>
+            <add position="replace"><![CDATA[        <button type="submit" id="button-invoice" form="form-order" formaction="<?php echo $invoice; ?>" data-toggle="tooltip" title="<?php echo $button_invoice_print; ?>" class="btn btn-info"><i class="fa fa-print"></i></button>
+        <?php if ( $neoseo_cash_memo_replace_status == 0 ) { ?>
+        <button type="submit" id="button-invoice2" form="form-order" formaction="<?php echo $neoseo_cash_memo; ?>" data-toggle="tooltip" title="<?php echo $button_neoseo_cash_memo; ?>" class="btn btn-info"><i class="fa fa-print"></i></button>
+        <?php } ?>
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[
+            $('#button-invoice').prop('disabled', false);
+            ]]></search>
+            <add position="after"><![CDATA[        $('#button-invoice2').prop('disabled', false);]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[
+            $('#button-shipping, #button-invoice').prop('disabled', true);
+            ]]></search>
+            <add position="after"><![CDATA[	$('#button-invoice2').prop('disabled', true);]]></add>
+        </operation>
+
+    </file>
+
+
+    <file path="catalog/controller/account/order.php">
+        <operation>
+            <search><![CDATA[if ($order_info['invoice_no']) {]]></search>
+            <add position="before"><![CDATA[
+            /* NeoSeo CashMemo - begin */
+		$this->language->load('account/neoseo_cash_memo_order');
+		$data['button_neoseo_cash_memo'] = $this->language->get('button_neoseo_cash_memo');
+		$data['neoseo_cash_memo_client_side'] = $this->config->get('neoseo_cash_memo_client_side');
+
+		 $data['neoseo_cash_memo_invoice_status'] = $this->config->get('neoseo_cash_memo_invoice_status');
+		 $data['button_neoseo_product_order'] = $this->language->get('button_neoseo_product_order');
+		 $data['neoseo_cash_memo_product_order_client'] = $this->config->get('neoseo_cash_memo_product_order_client');
+		 $data['neoseo_cash_memo_product_order_status'] = $this->config->get('neoseo_cash_memo_product_order');
+
+		if( isset( $order_id ) ) {
+			$data['neoseo_cash_memo'] = $this->url->link('account/neoseo_cash_memo','order_id=' . $order_id , 'SSL');
+			$data['neoseo_cash_memo_product_order'] = $this->url->link('account/neoseo_cash_memo','order_id=' . $order_id  . '&product_order=1', 'SSL');
+			$data['invoice'] = $this->url->link('account/neoseo_cash_memo','order_id=' . $order_id , 'SSL');
+			$data['button_invoice_print'] = $data['button_neoseo_cash_memo'];
+		} else {
+			$data['neoseo_cash_memo'] = $this->url->link('account/neoseo_cash_memo','', 'SSL');
+			$data['neoseo_cash_memo_product_order'] = $this->url->link('account/neoseo_cash_memo','&product_order=1', 'SSL');
+		}
+		/* NeoSeo CashMemo - end */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/account/order_info.tpl">
+        <operation>
+            <search><![CDATA[<div id="content" class="<?php echo $class; ?>"><?php echo $content_top; ?>]]></search>
+            <add position="after"><![CDATA[
+            <!-- NeoSeo CashMemo - begin -->
+            <?php if($neoseo_cash_memo_invoice_status && $neoseo_cash_memo_client_side){ ?>
+                <div class="pull-right"><a href="<?php echo $invoice; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_invoice_print; ?>" class="btn btn-info"><i class="fa fa-print"></i></a>
+                </div>
+            <?php } ?>
+            <?php if($neoseo_cash_memo_product_order_status && $neoseo_cash_memo_product_order_client){ ?>
+                <div class="pull-right"><a href="<?php echo $neoseo_cash_memo_product_order; ?>" target="_blank" data-toggle="tooltip" title="<?php echo $button_neoseo_product_order; ?>" class="btn btn-info"><i class="fa fa-list-alt"></i></a><span>&nbsp;</span>
+                </div>
+            <?php } ?>
+            <!-- NeoSeo CashMemo - end -->
+            ]]></add>
+        </operation>
+    </file>
+
+</modification>

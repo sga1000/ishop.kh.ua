@@ -1,0 +1,664 @@
+
+$white: #fff;
+
+/*=== PRODUCT PREVIEW LABELS - begin ===*/
+
+.product-preview-label {
+  position: absolute;
+  z-index: 3;
+
+  span {
+    color: $white;
+    font-size: 12px;
+    position: relative;
+  }
+
+  // Виды меток
+
+    // Позиционирование
+
+    $left: 15px;
+    $top: 15px;
+    $right: 15px;
+    $bottom: 15px;
+
+  &.chip {
+   
+    span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      min-height: 50px;
+      min-width: 50px;
+      max-width: 50px;
+      text-align: center;
+    }
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+  }
+
+  &.sticker {
+   
+    span {
+      &:before, &:after {
+        content: '';
+        display: inline-flex;
+        position: absolute;
+        background: inherit;
+      }
+    }
+
+    $margin-left: 10px;
+    $margin-right: 10px;
+
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left, &.label-bottom-left {
+      @media (min-width: 768px) {
+        transform: translateX(-30px);
+      }
+      span {
+        margin-left: $margin-left;
+        padding: 6px 16px 6px 11px;
+        border-radius: 0 10px 10px 0;
+        &:before {
+          top: 0;
+          left: -10px;
+          width: 10px;
+          height: 22px;
+        }
+        &:after {
+          border: 13px solid transparent;
+          border-left: 7px solid;
+          bottom: 0;
+          left: -10px;
+        }
+      }
+    }
+
+    &.label-top-right, &.label-bottom-right {
+      @media (min-width: 768px) {
+        transform: translateX(30px);
+      }
+      span {
+        margin-right: $margin-right;
+        padding: 6px 11px 6px 16px;
+        border-radius: 10px 0 0 10px;
+        &:before {
+          top: 0;
+          right: -10px;
+          width: 10px;
+          height: 22px;
+        }
+        &:after {
+          border: 13px solid transparent;
+          border-right: 7px solid;
+          bottom: 0;
+          right: -10px;
+        }
+      }
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+  }
+
+  &.tally {
+    
+    span {
+      border-radius: 4px;
+      min-height: 34px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      &:before,
+      &:after {
+        content: '';
+        display: inline-flex;
+        position: absolute;
+        background: inherit;
+        transform: rotate(45deg);
+        width: 10px;
+        height: 10px;
+      }
+
+      &:before {
+        left: -5px;
+      }
+
+      &:after {
+        right: -5px;
+      }
+    }
+
+
+    &.label-top-left, &.label-bottom-left {
+      @media (min-width: 768px) {
+        transform: translateX(-16px);
+      }
+    }
+
+    &.label-top-right, &.label-bottom-right {
+      @media (min-width: 768px) {
+        transform: translateX(16px);
+      }
+    }
+
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+  }
+
+  &.stripes {
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    span {
+      padding: 2px 0; 
+      min-width: 160px;
+      text-align: center;
+    }
+
+    $left: 0;
+    $top: 0;
+    $right: 0;
+    $bottom: 0;
+
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+      padding: 0 12px 12px 0;
+      span {
+        transform: rotate(-45deg);
+      }
+    }
+
+    &.label-top-right {
+      right: $right;
+      padding: 0 0 12px 12px;
+      span {
+        transform: rotate(45deg);
+      }
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+      padding: 12px 12px 0 0;
+      span {
+        transform: rotate(45deg);
+      }
+    }
+
+    &.label-bottom-right {
+      right: $right;
+      padding: 12px 0 0 12px;
+      span {
+        transform: rotate(-45deg);
+      }
+    }
+
+  }
+
+  &.b-ribbon {
+
+    span {
+      padding: 10px 20px;
+      position: relative;
+      &:before, &:after {
+        content: '';
+        position: absolute;
+        display: inline-flex;
+        background: inherit;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    $left: 0;
+    $top: 30px;
+    $right: 0;
+    $bottom: 30px;
+
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+    &.label-bottom-left, &.label-top-left {
+      span {
+        &:before {
+          right: -10px;
+          top: 4px;
+          transform: skewX(-35deg);
+        }
+        &:after {
+          right: -10px;
+          bottom: -2px;
+          transform: skewX(35deg);
+        }
+      }
+ 
+    }
+
+    &.label-bottom-right, &.label-top-right {
+      span {
+        &:before {
+          left: -10px;
+          top: 4px;
+          transform: skewX(35deg);
+        }
+        &:after {
+          left: -10px;
+          bottom: -2px;
+          transform: skewX(-35deg);
+        }
+      }
+    }
+
+  }
+
+  
+  &.corner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    overflow: hidden;
+    span {
+      min-height: 60px;
+      min-width: 160px;
+      display: flex;
+      justify-content: center;
+    }
+
+    $left: 0;
+    $top: 0;
+    $right: 0;
+    $bottom: 0;
+
+    // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+      padding: 0 45px 45px 0;
+      span {
+        transform: rotate(-45deg);
+        padding-bottom: 5px;
+        align-items: flex-end;
+      }
+    }
+
+    &.label-top-right {
+      right: $right;
+      padding: 0 0 45px 45px;
+      span {
+        transform: rotate(45deg);
+        padding-bottom: 5px;
+        align-items: flex-end;
+      }
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+      padding: 45px 45px 0 0;
+      span {
+        padding-top: 5px;
+        transform: rotate(45deg);
+      }
+    }
+
+    &.label-bottom-right {
+      right: $right;
+      padding: 45px 0 0 45px;
+      span {
+        padding-top: 5px;
+        transform: rotate(-45deg);
+      }
+    }
+
+  }
+
+  &.type-1 {
+
+    span {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 24px;
+    }
+
+    $left: 0;
+    $top: 0;
+    $right: 0;
+    $bottom: 0;
+
+     // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+  }
+
+  &.type-2 {
+
+    span {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      border: 4px double $white;
+    }
+
+    $left: 0;
+    $top: 0;
+    $right: 0;
+    $bottom: 0;
+
+     // Метки в верхней части превью
+
+    &[class*="label-top"] {
+      top: $top;
+    }
+
+    &.label-top-left {
+      left: $left;
+    }
+
+    &.label-top-right {
+      right: $right;
+    }
+
+    // Метки в нижней части превью
+
+    &[class*="label-bottom"] {
+      bottom: $bottom;
+    }
+
+    &.label-bottom-left {
+      left: $left;
+    }
+
+    &.label-bottom-right {
+      right: $right;
+    }
+
+  }
+
+}
+
+/*=== Карточка товара ===*/
+
+.thumbnails {
+  overflow: visible;
+  .product-preview-label {
+    span {
+      font-size: 14px;
+    }
+
+    &.corner {
+      width: 100px;
+      height: 100px;
+
+      span {
+        min-height: 70px;
+      }
+  
+  
+      // Метки в верхней части
+  
+      &.label-top-left {
+        padding: 0 35px 35px 0;
+        span {
+          margin: 0 20px 20px 0 ;
+        }
+      }
+  
+      &.label-top-right {
+        padding: 0 0 35px 35px;
+        span {
+          margin: 0 0 20px 20px;
+        }
+      }
+  
+      // Метки в нижней части
+      &.label-bottom-left {
+        padding: 35px 35px 0 0;
+        span {
+          margin: 20px 20px 0 0;
+        }
+      }
+  
+      &.label-bottom-right {
+        padding: 35px 0 0 35px;
+        span {
+          margin: 20px 0 0 20px;
+        }
+      }
+  
+    }
+
+    &.stripes {
+      width: 90px;
+      height: 90px;
+  
+      // Метки в верхней части
+  
+      &.label-top-left {
+        padding: 0 16px 16px 0;
+      }
+  
+      &.label-top-right {
+        padding: 0 0 16px 16px;
+      }
+  
+      // Метки в нижней части
+  
+      &.label-bottom-left {
+        padding: 16px 16px 0 0
+      }
+  
+      &.label-bottom-right {
+        padding: 16px 0 0 16px;
+      }
+  
+    }
+    
+
+    &.sticker {
+  
+      span {
+        &:after {
+          border: 14px solid transparent;
+        }
+      }
+      // Метки в верхней части
+  
+      &.label-top-left {
+        span {
+          &:after{
+            border-left: 8px solid;
+          }
+        }
+      }
+  
+      &.label-top-right {
+        span {
+          &:after{
+            border-right: 8px solid;
+          }
+        }
+      }
+  
+      // Метки в нижней части
+  
+      &.label-bottom-left {
+        span {
+          &:after{
+            border-left: 8px solid;
+          }
+        }
+      }
+  
+      &.label-bottom-right {
+  
+        span {
+          &:after{
+            border-right: 8px solid;
+          }
+        }
+      }
+  
+    }
+    
+  }
+  
+}
+
+/*=== PRODUCT PREVIEW LABELS - end ===*/

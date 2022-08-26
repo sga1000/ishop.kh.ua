@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo UniSTOR</name>
+	<version>1.0</version>
+	<code>neoseo-unistor</code>
+	<author>Alexander Sorokin</author>
+	<link>https://neoseo.com.ua</link>
+	<file path="system/engine/loader.php">
+		<operation>
+			<search><![CDATA[$file = DIR_TEMPLATE . $template;]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Unistor - begin */
+		$tpl_prefix  = $this->registry->get('config')->get('neoseo_unistor_template_prefix');
+		$new_file = str_replace(".tpl","[".$tpl_prefix."].tpl",$file);
+		if(file_exists($new_file)){
+			$file = $new_file;
+		}
+		/* NeoSeo Unistor  - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/common/header.tpl')) {]]></search>
+			<add position="before" ><![CDATA[
+		/* NeoSeo Unistor - begin */
+
+		$data['detect'] = new Mobile_Detect();
+		/* NeoSeo Unistor  - end */]]></add>
+		</operation>
+	</file>
+
+</modification>

@@ -1,0 +1,34 @@
+.product-thumb .tag {
+    right: 15px;
+    top: -10px;
+    position: absolute;
+    width: 55px;
+    height: 55px;
+    position: absolute;
+    top: 0;
+    overflow: hidden;
+    z-index: 10;
+    transition: 0.1s ease-in-out;
+}
+
+.tag span.hit {
+    background: #f12717;
+}
+
+.tag span.sale {
+    background: #6eca49;
+}
+
+.product-thumb .tag span {
+    display: block;
+    color: white;
+    text-transform: uppercase;
+    transform: rotate(45deg);
+    position: absolute;
+    right: -66px;
+    top: -19px;
+    text-align: center;
+    width: 150px;
+    padding: 30px 5px 1px 5px;
+    font-weight: bold;
+}

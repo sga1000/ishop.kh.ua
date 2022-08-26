@@ -1,0 +1,634 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Cart Gift</name>
+	<version>1.0</version>
+	<code>neoseo-cart-gift</code>
+	<author>NeoSeo</author>
+	<link>http://neoseo.com.ua/neoseo-cart-gift</link>
+
+	<file path="admin/controller/catalog/product.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->get['limit'])) {]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			if (isset($this->request->get['filter_status'])) {
+				$filter_status = $this->request->get['filter_status'];
+			} else {
+				$filter_status = null;
+			}
+
+			if (isset($this->request->get['filter_stock_status'])) {
+				$filter_stock_status = $this->request->get['filter_stock_status'];
+			} else {
+				$filter_stock_status = array();
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['filter_model' => $filter_model,]]></search>
+			<add position="after"><![CDATA[
+				/* NeoSeo Cart Gift - begin */
+				'filter_status' => $filter_status,
+				'filter_stock_status' => $filter_stock_status,
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="admin/model/catalog/product.php">
+		<operation>
+			<search index="1"><![CDATA[if (!empty($data['filter_category'])) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if (isset($data['filter_stock_status']) && !empty($data['filter_stock_status'])) {
+			$sql .= " AND p.stock_status_id IN (" . $data['filter_stock_status'] . ")";
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[public function getProduct($product_id]]></search>
+			<add position="after"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			$query = $this->db->query("SELECT gtp.product_id FROM " . DB_PREFIX . "gift_to_product gtp WHERE gtp.product_id = '" . (int)$product_id . "' LIMIT 1");
+			$where = isset($where) ? $where : " p.status=1";
+			if($query->num_rows) {
+				$where = " p.status=0";
+			}
+			/* NeoSeo Cart Gift - end */
+	]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[WHERE p.product_id = '" . (int)$product_id . "' AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND p.status = '1']]></search>
+			<add position="replace"><![CDATA[WHERE p.product_id = '" . (int)$product_id . "' AND pd.language_id = '" . (int)$this->config->get('config_language_id') . "' AND ".$where."]]></add>
+		</operation>
+	</file>
+	<file path="system/library/cart.php">
+		<operation>
+			<search index="1"><![CDATA[foreach ($cart_query->rows as $cart) {]]></search>
+			<add position="after"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			$query = $this->db->query("SELECT gtp.product_id FROM " . DB_PREFIX . "gift_to_product gtp WHERE gtp.product_id = '" . (int)$cart['product_id'] . "' LIMIT 1");
+			$status = '1';
+			$is_gift = false;
+			if($query->num_rows) {
+				$status = '0';
+				$is_gift = true;
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[				$this->db->query("DELETE FROM " . DB_PREFIX . "cart WHERE cart_id = '" . (int)$cart['cart_id'] . "'");]]></search>
+			<add position="after"><![CDATA[
+				/* NeoSeo Cart Gift - begin */
+				$query_gift = $this->db->query("SELECT * FROM " . DB_PREFIX . "gift_to_product WHERE product_id = '" . $cart['product_id'] . "'");
+				if ($query_gift->num_rows) continue;
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[p.status = '1']]></search>
+			<add position="replace"><![CDATA[p.status = '".$status."']]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[public function add($product_id, $quantity = 1, $option = array(), $recurring_id = 0) {]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Cart Gift - begin */
+		$query_gift = $this->db->query("SELECT * FROM " . DB_PREFIX . "gift_to_product WHERE product_id = '" . $product_id . "'");
+
+		if($query_gift->num_rows) {
+			$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "cart c "
+				. "LEFT JOIN " . DB_PREFIX . "gift_to_product g2p ON (c.product_id = g2p.product_id) "
+				. "WHERE c.customer_id = '" . (int)$this->customer->getId() . "' AND c.session_id = '" . $this->db->escape($this->session->getId()) . "'");
+
+			if ($query->num_rows) {
+				foreach ($query->rows as $row) {
+					if ($row['gift_id']) return;
+				}
+				$query_gift_first = $this->db->query("SELECT customer_id FROM " . DB_PREFIX . "customer "
+					. "WHERE customer_id = " . $this->customer->getId() . "  AND gift = 1");
+
+				if ($this->config->get('neoseo_cart_gift_new_user') == $query_gift->row['gift_id'] && $query_gift_first->num_rows) return;
+			} else {
+				return;
+			}
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$product_data[] = array(]]></search>
+			<add position="after"><![CDATA[
+					/* NeoSeo Cart Gift - begin */
+					'is_gift'         => $is_gift,
+					/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[public function clear() {]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$this->db->query("DELETE FROM " . DB_PREFIX . "gift_is_selected WHERE customer_id = '" . (int)$this->customer->getId() . "' AND session_id = '" . $this->db->escape($this->session->getId()) . "'");
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/neoseo_cart.php">
+		<operation>
+			<search><![CDATA[$this->cart->remove($this->request->post['remove']);]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$this->load->model('module/neoseo_cart_gift');
+			$this->model_module_neoseo_cart_gift->deleteGiftInfo($this->request->post['remove']);
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (!$this->cart->hasProducts()) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		$cart_products = $this->cart->getProducts();
+
+		foreach ($cart_products as $product) {
+			if ($product['is_gift'] && count($cart_products) == 1) {
+				$this->cart->clear();
+			}
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['cart'] = $this->url->link('checkout/cart', '', 'SSL');]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$data['gift_products_template'] =  $this->load->controller('module/neoseo_cart_gift');
+			$gift_title = $this->config->get('neoseo_cart_gift_gift_title');
+			$language_id = $this->config->get('config_language_id');
+			$data['gift_title'] = isset($gift_title[$language_id]) ? $gift_title[$language_id] : '';
+		}else{
+			$data['gift_products_template'] = '';
+			$data['gift_title'] = '';
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			if ($product['is_gift']) {
+				$href = $this->config->get('neoseo_cart_gift_show_gifts') == 1 ? $this->url->link('product/product', 'product_id=' . $product['product_id']) : 'javascript:void(0);';
+				$gift_product = array(
+					'is_gift' => $product['is_gift'],
+					'key' => $product['cart_id'],
+					'thumb' => $image,
+					'name' => $product['name'],
+					'model' => $product['model'],
+					'option' => $option_data,
+					'quantity' => $product['quantity'],
+					'price' => $price,
+					'total' => $total,
+					'href' => $href
+				);
+				array_unshift($data['products'], $gift_product);
+			}else{
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="after"><![CDATA[
+				/* NeoSeo Cart Gift - begin */
+				'is_gift' => $product['is_gift'],
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href' => $this->url->link('product/product', 'product_id=' . $product['product_id'])]]></search>
+			<add position="after" offset="1"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/cart.php">
+		<operation>
+			<search><![CDATA[$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id);]]></search>
+			<add position="replace"><![CDATA[/* NeoSeo Cart Gift - begin */
+				$is_gift = false;
+				if (isset($this->request->post['is_gift']) && $this->request->post['is_gift'] == 1) {
+					$is_gift = true;
+					$this->load->model('module/neoseo_cart_gift');
+					if ($this->model_module_neoseo_cart_gift->checkGiftInfo()) {
+						$this->response->addHeader('Content-Type: application/json');
+						$this->response->setOutput(json_encode($json));
+					}else{
+						$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id);
+						$cart_products = $this->cart->getProducts();
+						$this->model_module_neoseo_cart_gift->saveGiftInfo($this->request->post['product_id'], $cart_products);
+					}
+				}else{
+					$this->cart->add($this->request->post['product_id'], $quantity, $option, $recurring_id);
+				}
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$json['total'] = sprintf($this->language->get('text_items')]]></search>
+			<add position="before"><![CDATA[
+				/* NeoSeo Cart Gift - begin */
+				if ($this->config->get('neoseo_cart_gift_status') == 1) {
+					$json['gift_products_template'] = $this->load->controller('module/neoseo_cart_gift');
+				}else{
+					$json['gift_products_template'] = '';
+				}
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->response->redirect($this->url->link('checkout/cart'));]]></search>
+			<add position="after" offset="1"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$json['gift_products_template'] = $this->load->controller('module/neoseo_cart_gift');
+		}else{
+			$json['gift_products_template'] = '';
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->cart->remove($this->request->post['key']);]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			if ($this->config->get('neoseo_cart_gift_status') == 1) {
+				$this->cart->remove($this->request->post['key']);
+
+				$this->load->model('module/neoseo_cart_gift');
+				$this->model_module_neoseo_cart_gift->deleteGiftInfo($this->request->post['key']);
+
+				$cart_products = $this->cart->getProducts();
+				foreach ($cart_products as $product) {
+					if ($product['is_gift'] && count($cart_products) == 1) {
+						$this->cart->clear();
+					}
+				}
+			}else{
+				$this->cart->remove($this->request->post['key']);
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[$json['total'] = sprintf($this->language->get('text_items')]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			if ($this->config->get('neoseo_cart_gift_status') == 1) {
+				$json['gift_products_template'] = $this->load->controller('module/neoseo_cart_gift');
+			}else{
+				$json['gift_products_template'] = '';
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[unset($this->session->data['shipping_method']);]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Cart Gift - begin */
+				if (!$is_gift) {
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[unset($this->session->data['payment_methods']);]]></search>
+			<add position="after"><![CDATA[				/* NeoSeo Cart Gift - begin */
+				}
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/cart.tpl')) {]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Cart Gift - begin */
+			if ($this->config->get('neoseo_cart_gift_status') == 1) {
+				$gift_title = $this->config->get('neoseo_cart_gift_gift_title');
+				$language_id = $this->config->get('config_language_id');
+				$data['gift_title'] = isset($gift_title[$language_id]) ? $gift_title[$language_id] : '';
+			}else{
+				$data['gift_title'] = '';
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			if ($product['is_gift']) {
+				$href = $this->config->get('neoseo_cart_gift_show_gifts') == 1 ? $this->url->link('product/product', 'product_id=' . $product['product_id']) : 'javascript:void(0);';
+				$gift_product = array(
+					'is_gift' => $product['is_gift'],
+					'cart_id' => $product['cart_id'],
+					'thumb' => $image,
+					'name' => $product['name'],
+					'model' => $product['model'],
+					'option' => $option_data,
+					'recurring' => $recurring,
+					'quantity' => $product['quantity'],
+					'stock'     => $product['stock'] ? true : !(!$this->config->get('config_stock_checkout') || $this->config->get('config_stock_warning')),
+					'reward'    => ($product['reward'] ? sprintf($this->language->get('text_points'), $product['reward']) : ''),
+					'price' => $price,
+					'total' => $total,
+					'href' => $href
+				);
+				array_unshift($data['products'], $gift_product);
+			}else{
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="after"><![CDATA[
+				/* NeoSeo Cart Gift - begin */
+				'is_gift' => $product['is_gift'],
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'      => $this->url->link('product/product', 'product_id=' . $product['product_id'])]]></search>
+			<add position="after" offset="1"><![CDATA[
+			/* NeoSeo Cart Gift - begin */
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/success.php">
+		<operation>
+			<search><![CDATA[if (isset($this->session->data['order_id'])) {]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Cart Gift - begin */
+			if ($this->config->get('neoseo_cart_gift_new_user') && $this->customer->getId()) {
+				$order_id = $this->session->data['order_id'];
+				$gift_query = $this->db->query("SELECT order_product_id FROM " . DB_PREFIX . "order_product op " . "WHERE order_id = '" . (int)$order_id . "' AND product_id IN ("
+					. "SELECT product_id FROM " . DB_PREFIX . "gift_to_product WHERE gift_id = " . $this->config->get('neoseo_cart_gift_new_user') . ")");
+				if ($gift_query->num_rows > 0) {
+					$this->db->query("UPDATE " . DB_PREFIX . "customer SET gift = 1 WHERE customer_id = '" . $this->customer->getId() . "'");
+				}
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/checkout/cart.tpl">
+		<operation>
+			<search><![CDATA[<?php if (!$product['stock']) { ?>]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Cart Gift - begin -->
+                  <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+                    <h3 class="gift-row-title"><?php echo $gift_title ?></h3>
+                  <?php } ?>
+                  <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="text" name="quantity[<?php echo $product['cart_id']; ?>]"]]></search>
+			<add position="before"><![CDATA[                    <!-- NeoSeo Cart Gift - begin -->
+                    <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+                    <input type="text" name="quantity[<?php echo $product['cart_id']; ?>]" value="<?php echo $product['quantity']; ?>" size="1" class="form-control" disabled />
+                    <span class="input-group-btn">
+                    <button type="button" data-toggle="tooltip" title="<?php echo $button_remove; ?>" class="btn btn-danger" onclick="cart.remove('<?php echo $product['cart_id']; ?>');"><i class="fa fa-times-circle"></i></button></span></div></td>
+                    <?php } else { ?>
+                    <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-right"><?php echo $product['price']; ?></td>]]></search>
+			<add position="before"><![CDATA[                    <!-- NeoSeo Cart Gift - begin -->
+                    <?php } ?>
+                    <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/checkout/neoseo_cart.tpl">
+		<operation>
+			<search index="0"><![CDATA[<?php if ($products || $vouchers) { ?>]]></search>
+			<add position="before"><![CDATA[
+<!-- NeoSeo Cart Gift - begin -->
+<?php if (isset($gift_products_template) && $gift_products_template) { ?>
+<?php echo $gift_products_template; ?>
+<script>
+    $(document).ready(function(){
+        if ($('.gift-block .gift').length > 2) {
+            $('.gift-block form').addClass('gift-slider')
+            $('.gift-block .gift-slider').owlCarousel({
+                items: 2,
+                nav: true,
+                dots: false
+            });
+        } else {
+            $('.gift-block form').addClass('block-flex')
+        }
+
+
+
+})
+</script>
+<?php } ?>
+<!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php foreach ($products as $product) { ?>]]></search>
+			<add position="after"><![CDATA[
+    <!-- NeoSeo Cart Gift - begin -->
+    <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+    <div class="row gift-row" style="margin-bottom:10px;">
+        <h3><?php echo $gift_title ?></h3>
+    <?php }else{ ?>
+    <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class="row" style="margin-bottom:10px;">]]></search>
+			<add position="after"><![CDATA[
+    <!-- NeoSeo Cart Gift - begin -->
+    <?php } ?>
+    <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a class="plus btn btn-xs"><i class="glyphicon glyphicon-plus"></i></a>]]></search>
+			<add position="before"><![CDATA[
+                <!-- NeoSeo Cart Gift - begin -->
+                <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+                <a class="trash btn btn-xs" href="<?php echo $product['key']; ?>" ><i class="glyphicon glyphicon-trash"></i></a>
+                <?php }else{ ?>
+                <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a class="minus btn btn-xs"><i class="glyphicon glyphicon-minus"></i></a>]]></search>
+			<add position="after"><![CDATA[
+                <!-- NeoSeo Cart Gift - begin -->
+                <?php } ?>
+                <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/common/cart.tpl">
+		<operation>
+			<search><![CDATA[<?php if ($products || $vouchers) { ?>]]></search>
+			<add position="before"><![CDATA[
+        <!-- NeoSeo Cart Gift - begin -->
+        <?php if (isset($gift_products_template) && $gift_products_template) { ?>
+        <?php echo $gift_products_template; ?>
+        <?php } ?>
+        <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['scripts'] = $this->document->getScripts();]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			if ($this->config->get('config_template') == 'neoseo_unistor') {
+				$path_to_css = 'catalog/view/theme/neoseo_unistor/stylesheet/neoseo_cart_gift.css';
+				$path_to_js = 'catalog/view/theme/neoseo_unistor/javascript/neoseo_cart_gift.js';
+			}else{
+				$path_to_css = 'catalog/view/theme/default/stylesheet/neoseo_cart_gift.css';
+				$path_to_js = 'catalog/view/javascript/neoseo_cart_gift.js';
+			}
+			$this->document->addStyle($path_to_css);
+			$this->document->addScript($path_to_js);
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/cart.php">
+		<operation>
+			<search><![CDATA[$data['cart'] = $this->url->link('checkout/cart');]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$data['gift_products_template'] =  $this->load->controller('module/neoseo_cart_gift');
+			$gift_title = $this->config->get('neoseo_cart_gift_gift_title');
+			$language_id = $this->config->get('config_language_id');
+			$data['gift_title'] = isset($gift_title[$language_id]) ? $gift_title[$language_id] : '';
+		}else{
+			$data['gift_products_template'] = '';
+			$data['gift_title'] = '';
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Cart Gift - begin */
+			if ($product['is_gift']) {
+				$href = $this->config->get('neoseo_cart_gift_show_gifts') == 1 ? $this->url->link('product/product', 'product_id=' . $product['product_id']) : 'javascript:void(0);';
+				$gift_product = array(
+					'is_gift' => $product['is_gift'],
+					'cart_id' => $product['cart_id'],
+					'thumb' => $image,
+					'name' => $product['name'],
+					'model' => $product['model'],
+					'option' => $option_data,
+					'recurring' => ($product['recurring'] ? $product['recurring']['name'] : ''),
+					'quantity' => $product['quantity'],
+					'price' => $price,
+					'total' => $total,
+					'href' => $href
+				);
+				array_unshift($data['products'], $gift_product);
+			}else{
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="after"><![CDATA[				/* NeoSeo Cart Gift - begin */
+				'is_gift' => $product['is_gift'],
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'      => $this->url->link('product/product', 'product_id=' . $product['product_id'])]]></search>
+			<add position="after" offset="1"><![CDATA[			/* NeoSeo Cart Gift - begin */
+			}
+			/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/confirm.php">
+		<operation>
+			<search><![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/confirm.tpl')) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Cart Gift - begin */
+		if ($this->config->get('neoseo_cart_gift_status') == 1) {
+			$data['gift_products_template'] =  $this->load->controller('module/neoseo_cart_gift');
+			$gift_title = $this->config->get('neoseo_cart_gift_gift_title');
+			$language_id = $this->config->get('config_language_id');
+			$data['gift_title'] = isset($gift_title[$language_id]) ? $gift_title[$language_id] : '';
+		}else{
+			$data['gift_products_template'] = '';
+			$data['gift_title'] = '';
+		}
+		/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Cart Gift - begin */
+				if ($product['is_gift']) {
+					$href = $this->config->get('neoseo_cart_gift_show_gifts') == 1 ? $this->url->link('product/product', 'product_id=' . $product['product_id']) : 'javascript:void(0);';
+					$gift_product = array(
+						'is_gift' => $product['is_gift'],
+						'cart_id'    => $product['cart_id'],
+						'product_id' => $product['product_id'],
+						'name'       => $product['name'],
+						'model'      => $product['model'],
+						'option'     => $option_data,
+						'recurring'  => $recurring,
+						'quantity'   => $product['quantity'],
+						'subtract'   => $product['subtract'],
+						'price'      => $this->currency->format($this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax'))),
+						'total'      => $this->currency->format($this->tax->calculate($product['price'], $product['tax_class_id'], $this->config->get('config_tax')) * $product['quantity']),
+						'href' => $href
+					);
+				array_unshift($data['products'], $gift_product);
+				}else{
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="after"><![CDATA[					/* NeoSeo Cart Gift - begin */
+					'is_gift' => $product['is_gift'],
+					/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'       => $this->url->link('product/product', 'product_id=' . $product['product_id']),]]></search>
+			<add position="after" offset="1"><![CDATA[				/* NeoSeo Cart Gift - begin */
+				}
+				/* NeoSeo Cart Gift - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/common/cart.tpl">
+		<operation>
+			<search><![CDATA[<?php if ($products || $vouchers) { ?>]]></search>
+			<add position="before"><![CDATA[    <!-- NeoSeo Cart Gift - begin -->
+    <?php if (isset($gift_products_template) && $gift_products_template) { ?>
+      <li><?php echo $gift_products_template; ?></li>
+    <?php } ?>
+    <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a>]]></search>
+			<add position="after"><![CDATA[            <!-- NeoSeo Cart Gift - begin -->
+            <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+              <b><?php echo $gift_title ?></b>
+            <?php } ?>
+            <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/checkout/confirm.tpl">
+		<operation>
+			<search><![CDATA[<div class="table-responsive">]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Cart Gift - begin -->
+<?php if (isset($gift_products_template) && $gift_products_template) { ?>
+  <?php echo $gift_products_template; ?>
+<?php } ?>
+<!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a>]]></search>
+			<add position="after"><![CDATA[          <!-- NeoSeo Cart Gift - begin -->
+          <?php if (isset($product['is_gift']) && $product['is_gift']) { ?>
+            <b><?php echo $gift_title ?></b>
+          <?php } ?>
+          <!-- NeoSeo Cart Gift - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/common/footer.tpl">
+		<operation>
+			<search><![CDATA[<footer>]]></search>
+			<add position="after">
+				<![CDATA[
+				<!-- NeoSeo Cart Gift - begin -->
+							<script>
+							$('.cart .cart__list').on('click', function() {
+								$(this).next('.cart__products-list').toggle();
+							});
+							</script>
+						<!-- NeoSeo Cart Gift - end -->
+				]]></add>
+		</operation>
+	</file>
+</modification>

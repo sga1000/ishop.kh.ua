@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+    <name>All in One Remarketing Template</name>
+    <code>all_in_one_remarketing_template</code>
+    <version>3.3 2.x</version>
+    <author>spectre</author>
+    <link>https://freelancer.od.ua/</link>
+	<!--
+	if (typeof remarketingAddToCart == 'function') {
+		remarketingAddToCart(json);
+	}
+	if (typeof remarketingRemoveFromCart == 'function') {
+		remarketingRemoveFromCart(json);
+	}
+	if (typeof sendWishList == 'function') {
+		sendWishList(json);
+	}
+	if (typeof remarketingQuickOrder == 'function') { 
+		remarketingQuickOrder(json);
+	}
+	-->
+  <file path="catalog/view/theme/*/template/common/header.tpl 1">
+        <operation error="skip">
+            <search><![CDATA[<head >]]></search>
+            <add position="after"><![CDATA[
+         <?php if (isset($remarketing_head)) { 
+			echo $remarketing_head; 
+         } ?>
+			]]></add>
+        </operation>
+        <operation error="skip">
+            <search><![CDATA[<body 23]]></search>
+            <add position="after"><![CDATA[
+         <?php if (isset($remarketing_body)) { 
+			echo $remarketing_body; 
+         } ?>
+	  <?php if (isset($google_identifier)) { ?>
+		  <input type="hidden" value="<?php echo $google_identifier; ?>" class="google_identifier" />
+      <?php } ?>
+	  <?php if (isset($remarketing_currency)) { ?>
+		  <input type="hidden" value="<?php echo $remarketing_currency; ?>" class="currency_remarketing_code" />
+      <?php } ?>
+	  <?php if (isset($google_currency)) { ?>
+		  <input type="hidden" value="<?php echo $google_currency; ?>" class="currency_google_code" />
+      <?php } ?>
+	  <?php if (isset($facebook_currency)) { ?>
+		  <input type="hidden" value="<?php echo $facebook_currency; ?>" class="currency_facebook_code" />
+      <?php } ?>
+	  <?php if (isset($ecommerce_currency)) { ?>
+		  <input type="hidden" value="<?php echo $ecommerce_currency; ?>" class="currency_ecommerce_code" />
+      <?php } ?>
+			]]></add>
+        </operation>
+    </file>
+	<file path="catalog/view/theme/*/template/common/footer.tpl">
+		<operation error="skip">
+      <search><![CDATA[</body>]]></search>
+      <add position="before">
+	  <![CDATA[
+	  <?php if ($remarketing_status) { ?>
+	  
+	  <?php if (isset($remarketing_footer)) { 
+		  echo $remarketing_footer; 
+      } ?>
+
+	  <script>
+	  <?php if ($ecommerce_status && isset($ecommerce_selector) && $ecommerce_selector) { ?>
+	   $(document).on('click', '<?php echo $ecommerce_selector; ?>', function() {
+	    if (typeof ecommerce_product_data !== 'undefined') {
+		product_id = $(this).find('.remarketing_cart_button').attr('data-product_id');
+		
+		if (product_id) {
+			$(ecommerce_product_data).each(function(key, data) {
+			if (data['id'] == product_id) {
+				if (typeof ecommerce_product_data[key] !== 'undefined') {
+					if (typeof sendEcommerceClick !== 'undefined') {
+						sendEcommerceClick(ecommerce_product_data[key]);
+					}
+				}
+			} 
+		})
+		}
+		}
+	  });
+	  <?php } ?>
+	  <?php if ($ecommerce_ga4_status && isset($ecommerce_ga4_selector) && $ecommerce_ga4_selector) { ?>
+	   $(document).on('click', '<?php echo $ecommerce_ga4_selector; ?>', function() {
+	    if (typeof ecommerce_ga4_product_data !== 'undefined') {
+		item_id = $(this).find('.remarketing_cart_button').attr('data-product_id');
+		$(ecommerce_ga4_product_data).each(function(key, data) {
+		if (data['item_id'] == item_id) {
+			if (typeof ecommerce_ga4_product_data[key] !== 'undefined') {
+				if (typeof sendEcommerceGa4Click !== 'undefined') {
+					sendEcommerceGa4Click(ecommerce_ga4_product_data[key]);
+				}
+			}
+		} 
+		})
+		}
+	  })
+	  <?php } ?>
+	  <?php if ($ecommerce_measurement_status && isset($ecommerce_measurement_selector) && $ecommerce_measurement_selector) { ?>
+	  $(document).on('click', '<?php echo $ecommerce_measurement_selector; ?>', function() {
+	    if (typeof ecommerce_product_data !== 'undefined') {
+		product_id = $(this).find('.remarketing_cart_button').attr('data-product_id');
+		if (product_id) {
+			$(ecommerce_product_data).each(function(key, data) {
+			if (data['id'] == product_id) {
+				if (typeof ecommerce_product_data[key] !== 'undefined') {
+					if (typeof sendEcommerceMeasurementClick !== 'undefined') {
+						sendEcommerceMeasurementClick(ecommerce_product_data[key]);
+					}
+				}
+			} 
+		})
+		}
+		}
+	  })
+	  <?php } ?>
+     </script>
+	
+	<script>
+	$(document).ajaxSuccess(function(event, xhr, settings) {
+		if (settings.url == 'index.php?route=checkout/cart/add') {
+			if (typeof xhr.responseJSON['remarketing'] !== 'undefined') {
+				if (typeof remarketingAddToCart == 'function') {
+					remarketingAddToCart(xhr.responseJSON);
+				}
+			}
+		}
+		if (settings.url == 'index.php?route=checkout/cart/remove') {
+			if (typeof xhr.responseJSON['remarketing'] !== 'undefined') {
+				if (typeof remarketingRemoveFromCart == 'function') {
+					remarketingRemoveFromCart(xhr.responseJSON);
+				}
+			}
+		}
+		if (settings.url == 'index.php?route=account/wishlist/add') {
+			if (typeof xhr.responseJSON['remarketing'] !== 'undefined') {
+				if (typeof sendWishList == 'function') {
+					sendWishList(xhr.responseJSON);
+				}
+			}
+		}
+	});
+	</script>
+	<?php } ?>
+]]>
+      </add>
+    </operation>
+    </file>
+     <file path="catalog/view/theme/*/template/product/*.tpl">
+	<operation error="skip">
+      <search><![CDATA[<?php echo $footer; ?>]]></search>
+      <add position="before">
+      <![CDATA[
+	<?php if (isset($remarketing_google_json) && $remarketing_google_json) { ?>
+	<script>
+	if (typeof sendGoogleRemarketing !== 'undefined') {
+		sendGoogleRemarketing(<?php echo json_encode($remarketing_google_json); ?>);
+	}
+	</script>
+	<?php } ?>
+	<?php if (isset($remarketing_target_code) && $remarketing_target_code) echo $remarketing_target_code; ?>
+	<?php if (isset($remarketing_vk_code) && $remarketing_vk_code) echo $remarketing_vk_code; ?>
+	<?php if (isset($facebook_remarketing_code) && $facebook_remarketing_code) echo $facebook_remarketing_code; ?>
+	<?php if (isset($ecommerce_product_json) && $ecommerce_product_json) { ?>
+	<script>
+	window.dataLayer = window.dataLayer || [];
+	dataLayer.push(<?php echo json_encode($ecommerce_product_json); ?>);
+	<?php if ($measurement_status) { ?>
+	if (typeof sendEcommerceDetails !== 'undefined') {
+		sendEcommerceDetails(<?php echo json_encode($ecommerce_product_json); ?>, true);
+	}
+	<?php } ?>
+	</script>
+	<?php } ?>
+	<?php if (isset($ecommerce_ga4_product_json) && $ecommerce_ga4_product_json) { ?>
+	<script>
+	if (typeof sendEcommerceGa4Details !== 'undefined') {
+		sendEcommerceGa4Details(<?php echo json_encode($ecommerce_ga4_product_json); ?>);
+	}
+	</script>
+	<?php } ?>
+	<?php if (isset($remarketing_ecommerce_json) && $remarketing_ecommerce_json) { ?>
+	<script>
+	window.ecommerce_products = window.ecommerce_products || {};
+	ecommerce_product_data = <?php echo json_encode($remarketing_ecommerce_json); ?>;
+
+	if (typeof sendEcommerceImpressions !== 'undefined') {
+		sendEcommerceImpressions(ecommerce_product_data, <?php echo ($measurement_status) ? 'true' : 'false'; ?>);
+	}
+	
+	ecommerce_products = $.extend(ecommerce_products, ecommerce_product_data);
+	  </script>
+	<?php } ?>
+	<?php if (isset($remarketing_ecommerce_ga4_json) && $remarketing_ecommerce_ga4_json) { ?>
+	<script>
+	window.ecommerce_ga4_products = window.ecommerce_ga4_products || {};
+	ecommerce_ga4_product_data = <?php echo json_encode($remarketing_ecommerce_ga4_json); ?>;
+	if (typeof sendEcommerceGa4Impressions !== 'undefined') {
+		sendEcommerceGa4Impressions(ecommerce_ga4_product_data, '<?php echo (isset($view_search_results) && $view_search_results) ? true : false; ?>');
+	}
+	ecommerce_ga4_products = $.extend(ecommerce_ga4_products, ecommerce_ga4_product_data);
+	  </script>
+	  <?php } ?>
+	<?php if (isset($facebook_data_json) && $facebook_data_json) { ?>
+	<script>
+	if (typeof sendFacebookDetails !== 'undefined') {
+		sendFacebookDetails(<?php echo json_encode($facebook_data_json); ?>);
+	}
+	  </script>
+	<?php } ?>
+	<?php if (isset($facebook_data_json_category) && $facebook_data_json_category) { ?>
+	<script>
+	if (typeof sendFacebookCategoryDetails !== 'undefined') {
+		sendFacebookCategoryDetails(<?php echo json_encode($facebook_data_json_category); ?>);
+	}
+	  </script>
+	<?php } ?>
+	  ]]>
+      </add>
+    </operation>
+  </file>
+     <file path="catalog/view/theme/*/template/module/*.tpl \\temporary disabled">
+	<operation error="skip">
+      <search><![CDATA[<?php foreach ($products as $product) { ?>]]></search>
+      <add position="before">
+      <![CDATA[
+	<?php if (isset($remarketing_ecommerce_json) && $remarketing_ecommerce_json) { ?>
+	<script>
+	window.ecommerce_products = window.ecommerce_products || {};
+	ecommerce_product_data = <?php echo json_encode($remarketing_ecommerce_json); ?>;
+
+	if (typeof sendEcommerceImpressions !== 'undefined') {
+		sendEcommerceImpressionsModule(ecommerce_product_data, '<?php echo $heading_title; ?>', <?php echo ($measurement_status) ? 'true' : 'false'; ?>);
+	}
+	
+	ecommerce_products = $.extend(ecommerce_products, ecommerce_product_data);
+	  </script>
+	  <?php } ?>
+	  ]]>
+      </add>
+    </operation>
+  </file>
+</modification>

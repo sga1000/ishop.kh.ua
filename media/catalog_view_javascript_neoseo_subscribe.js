@@ -1,0 +1,6 @@
+function popupSubscribeShow(json){if($("#popup-calllback").length==0){$("body").append("<div id=\"popup-calllback\"></div>");}
+$("#popup-calllback").html(json["popup"]);$('#popup-calllback > div').modal();}
+function processSubscribe(data){if($('#subscribe-name'+data).length){var sendData={'subscribe':$('#subscribe'+data).val(),'subscribe_name':$('#subscribe-name'+data).val()};}else{var sendData={'subscribe':$('#subscribe'+data).val()};}
+var language="";if(window.current_language){language=window.current_language;}
+$.ajax({url:language+'index.php?route=module/neoseo_subscribe/process',type:'post',data:sendData,dataType:'json',success:function(json){$('.success, .warning, .attention, .information').remove();if(json['error']){if(json['error']['option']){for(i in json['error']['option']){$('#option-'+i).after('<span class="error">'+json['error']['option'][i]+'</span>');}}}
+if(json['popup']){$('#popup-subscribe > div').modal('hide');$('.modal-backdrop').remove();popupSubscribeShow(json);}}});}

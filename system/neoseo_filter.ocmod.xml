@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Filter</name>
+	<version>1.0</version>
+	<code>neoseo-filter</code>
+	<author>NeoSeo</author>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['text_product'] = $this->language->get('text_product');]]></search>
+			<add position="after"><![CDATA[
+
+		/* NeoSeo Filter - begin */
+		if( $this->user->hasPermission('access','catalog/neoseo_filter') && isset($this->session->data['token']) ) {
+			$this->language->load("catalog/neoseo_filter_menu");
+			$data['text_filter_menu'] = $this->language->get("text_filter_menu");
+			$data['link_filter_menu'] = $this->url->link('catalog/neoseo_filter', 'token=' . $this->session->data['token'], 'SSL');
+			$data['text_filter_pages_menu'] = $this->language->get("text_filter_pages_menu");
+			$data['link_filter_pages_menu'] = $this->url->link('catalog/neoseo_filter_pages', 'token=' . $this->session->data['token'], 'SSL');
+		}
+		/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<a href="<?php echo $product; ?>]]></search>
+			<add position="after"><![CDATA[			<!-- NeoSeo Filter - begin -->
+			<?php if(isset($link_filter_menu) && $link_filter_pages_menu) { ?>
+			<li><a href="<?php echo $link_filter_menu ?>"><?php echo $text_filter_menu; ?></a></li>
+			<li><a href="<?php echo $link_filter_pages_menu ?>"><?php echo $text_filter_pages_menu; ?></a></li>
+			<?php } ?>
+			<!-- NeoSeo Filter - begin -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/catalog/product.php">
+		<operation>
+			<search><![CDATA[// Filters]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - begin */
+			$this->document->addScript('view/javascript/bootstrap-multiselect/js/bootstrap-multiselect.js');
+			$this->document->addStyle('view/javascript/bootstrap-multiselect/css/bootstrap-multiselect.css');
+			if( !$this->model_catalog_neoseo_filter ) {
+				$this->load->model('catalog/neoseo_filter');
+			}
+			$data['filter_options'] = '';
+			if (isset($this->request->get['product_id'])) {
+				$data['filter_options'] = $this->model_catalog_neoseo_filter->getProductFilterOptions($this->request->get['product_id']);
+			}
+			$data['category_options'] = $this->url->link('catalog/neoseo_filter/product_options', 'token=' . $this->session->data['token'] . $url, 'SSL');
+			$this->language->load('catalog/neoseo_filter_product');
+			$data['entry_options'] = $this->language->get('entry_options');
+			$data['text_select_category'] = $this->language->get('text_select_category');
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[if (isset($data['product_option'])) {]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - begin */
+			$this->db->query("DELETE FROM " . DB_PREFIX . "filter_option_value_to_product WHERE product_id = '" . (int)$product_id . "'");
+
+			if(isset($data['filter_option'])) {
+				foreach ($data['filter_option'] as $option_id => $option_value_ids) {
+					foreach ($option_value_ids as $option_value_id ) {
+						$this->db->query("INSERT INTO " . DB_PREFIX . "filter_option_value_to_product SET product_id = '" . (int)$product_id . "', option_id = '" . (int)$option_id . "', option_value_id = '" . (int)$option_value_id . "'");
+					}
+				}
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$this->event->trigger('pre.admin.product.delete', $product_id);]]></search>
+			<add position="after"><![CDATA[
+
+		/* NeoSeo Filter - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_option_value_to_product WHERE product_id = '" . (int)$product_id . "'");
+		/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[function addProduct(]]></search>
+			<add position="after"><![CDATA[
+
+		/* NeoSeo Filter - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_cache");
+		if ($this->config->get('neoseo_filter_not_flush_filter_module_cache')) {
+			$this->db->query("DELETE FROM " . DB_PREFIX . "filter_module_cache");
+		}
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_category_cache");
+		/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[function editProduct(]]></search>
+			<add position="after"><![CDATA[
+
+		/* NeoSeo Filter - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_cache WHERE products like '%|" . (int)$product_id . "|%'");
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_cache WHERE products = '||'");
+		if ($this->config->get('neoseo_filter_not_flush_filter_module_cache')) {
+			$this->db->query("DELETE FROM " . DB_PREFIX . "filter_module_cache");
+		}
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_category_cache");
+		/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[function deleteProduct(]]></search>
+			<add position="after"><![CDATA[
+
+		/* NeoSeo Filter - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_cache WHERE products like '%|" . (int)$product_id . "|%'");
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_cache WHERE products = '||'");
+		if ($this->config->get('neoseo_filter_not_flush_filter_module_cache')) {
+			$this->db->query("DELETE FROM " . DB_PREFIX . "filter_module_cache");
+		}
+		$this->db->query("DELETE FROM " . DB_PREFIX . "filter_category_cache");
+		/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+	</file>
+
+	<file path="admin/view/template/catalog/product_form.tpl">
+		<operation>
+			<search index="1"><![CDATA[for="input-category">]]></search>
+			<add position="before"><![CDATA[
+
+					<!-- NeoSeo Filter - begin -->
+
+					<div style="display: inline-block; width: 100%; margin-bottom: 10px;">
+						<label class="control-label col-sm-2" style="text-decoration: underline;"><?php echo $entry_options; ?></label>
+					</div>
+					<div id="filter">
+						<div id="filter_placeholder" class="col-sm-12" style="margin-bottom: 10px;">
+							<?php echo $text_select_category; ?>
+						</div>
+						<div id="filter_options">
+
+						</div>
+					</div>
+
+					<script>
+						$('#main_category_id').change(function(){
+							var category_id = $(this).val();
+							if( !category_id ) {
+								$('#filter_placeholder').show();
+								$('#filter_options').hide();
+								$('#filter_options').html('');
+							} else {
+								$.ajax({
+									url: '<?php echo html_entity_decode($category_options); ?>',
+									type: 'get',
+									data: 'category_id=' + category_id + '&options=<?php echo $filter_options; ?>',
+									success: function (data) {
+										$('#filter_options').html(data);
+										$('#filter_placeholder').hide();
+										$('#filter_options').show();
+									},
+									error: function () {
+										$('#filter_placeholder').show();
+										$('#filter_options').hide();
+										$('#filter_options').html('');
+									}
+								});
+							}
+						});
+						$('#main_category_id').trigger('change');
+					</script>
+				</div>
+
+				<div class="form-group">
+				<!-- NeoSeo Filter - end -->
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/category.php">
+		<operation>
+			<search><![CDATA[$product_total = ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - begin */
+			if (isset($this->request->get['nsf'])) {
+				$filter_data['nsf'] = $this->request->get['nsf'];
+				$data['description'] = '';
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<!-- Sorts && Limits && Pages -->
+		<operation>
+			<search><![CDATA[
+            $data['sorts'] = array();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[
+            $data['limits'] = array();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[
+            $pagination = new Pagination();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<!-- SEO Meta -->
+
+		<operation>
+			<search limit="1"><![CDATA[
+            $data['limit'] = $limit;
+            ]]></search>
+			<add position="after"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$this->load->model('module/neoseo_filter');
+				$data['page_pagination'] = $page;
+				$data = $this->model_module_neoseo_filter->processMetaData($data, $this->request->get['nsf'], $category_id, $product_total);
+				if(isset($data['page_status']) && $data['page_status'] == 0){
+					return new Action('error/not_foud');
+				}
+				// для посадочных страниц нужно избегать дублирования текста в описании
+				if (isset($page) && $page > 1) {
+					$data["description"] = '';
+				}
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/manufacturer.php">
+		<operation>
+			<search><![CDATA[$product_total = ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - begin */
+			if (isset($this->request->get['nsf'])) {
+				$filter_data['nsf'] = $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+
+		<!-- Sorts && Limits && Pages -->
+		<operation>
+			<search><![CDATA[
+            $data['sorts'] = array();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[
+            $data['limits'] = array();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[
+            $pagination = new Pagination();
+            ]]></search>
+			<add position="before"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$url .= "&nsf=" . $this->request->get['nsf'];
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<!-- SEO Meta -->
+
+		<operation>
+			<search limit="1"><![CDATA[
+            $data['limit'] = $limit;
+            ]]></search>
+			<add position="after"><![CDATA[
+
+			/* NeoSeo Filter - start */
+			if (isset($this->request->get['nsf'])) {
+				$this->load->model('module/neoseo_filter');
+				$data['page_pagination'] = $page;
+				$data = $this->model_module_neoseo_filter->processMetaData($data, $this->request->get['nsf'], 0, $product_total);
+				if(isset($data['page_status']) && $data['page_status'] == 0){
+					return new Action('error/not_foud');
+				}
+				// для посадочных страниц нужно избегать дублирования текста в описании
+				if (isset($page) && $page > 1) {
+					$data["description"] = '';
+				}
+			}
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/catalog/product.php">
+		<operation>
+			<search index="0"><![CDATA[
+			if (!empty($data['filter_manufacturer_id']))
+			]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Filter - begin */
+		if (isset($data['nsf'])) {
+			if( !$this->model_module_neoseo_filter ) {
+				$this->load->model('module/neoseo_filter');
+			}
+			$nsf_category_id = 0;
+			if( isset($data['filter_category_id']) ) {
+				$nsf_category_id = $data['filter_category_id'];
+			}
+			$product_ids = $this->model_module_neoseo_filter->getProductIdsByFilter($data['nsf'],$nsf_category_id);
+			if( !$product_ids ) {
+				return array();
+			}
+			$sql .= " AND p.product_id IN (" . implode(",",$product_ids) . ") ";
+		}
+		/* NeoSeo Filter - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$product_attribute_group_data[] = array(]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Filter - begin */
+			if ($this->config->get('neoseo_filter_show_attributes')) {
+                if ($product_attribute_group['attribute_group_id'] == $this->config->get('neoseo_filter_show_attributes')) {
+                    $filter_used = true;
+                    if( !$this->model_module_neoseo_filter ) {
+                    	$this->load->model('module/neoseo_filter');
+					}
+                    $product_attribute_query = $this->model_module_neoseo_filter->getProductOptionsGrouped((int)$product_id);
+                    $product_attribute_data = array();
+                    if ($product_attribute_query) {
+
+                        foreach ($product_attribute_query as $product_attribute) {
+                            $product_attribute_data[] = array(
+                                'attribute_id' => '',
+                                'name' => $product_attribute['option_name'],
+                                'text' => $product_attribute['option_value_name']
+                            );
+                        }
+
+                    }
+                }
+            }
+			/* NeoSeo Filter - end */
+
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[return $product_attribute_group_data;]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Filter - begin */
+			if ($this->config->get('neoseo_filter_show_attributes')) {
+		    if (!$filter_used ) {
+                $product_attribute_group_query = $this->db->query("SELECT agd.name FROM " . DB_PREFIX . "attribute_group ag LEFT JOIN " . DB_PREFIX . "attribute_group_description agd ON (ag.attribute_group_id = agd.attribute_group_id) WHERE ag.attribute_group_id = '" . (int)$this->config->get('neoseo_filter_attributes_group') . "' AND agd.language_id = '" . (int)$this->config->get('config_language_id') . "' GROUP BY ag.attribute_group_id");
+                if ($product_attribute_group_query->num_rows) {
+                	if( !$this->model_module_neoseo_filter ) {
+                    	$this->load->model('module/neoseo_filter');
+					}
+                    $product_attribute_query = $this->model_module_neoseo_filter->getProductOptionsGrouped((int)$product_id);
+
+                    $product_attribute_data = array();
+                    if ($product_attribute_query) {
+
+                        foreach ($product_attribute_query as $product_attribute) {
+                            $product_attribute_data[] = array(
+                                'attribute_id' => (int)$product_attribute['option_id'] + 100000,
+                                'name' => $product_attribute['option_name'],
+                                'text' => $product_attribute['option_value_name']
+                            );
+                        }
+
+                    }
+
+                    $product_attribute_group_data[]  = array(
+                        'attribute_group_id' => (int)$this->config->get('neoseo_filter_attributes_group'),
+                        'name' => $product_attribute_group_query->row['name'],
+                        'attribute' => $product_attribute_data
+                    );
+                }
+            }
+        }
+		/* NeoSeo Filter - end */
+			]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$product_attribute_group_data = array();]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Filter - begin */
+		if ($this->config->get('neoseo_filter_show_attributes')) {
+            $filter_used = false;
+        }
+		/* NeoSeo Filter - end */
+			]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[
+			if (!empty($data['filter_manufacturer_id']))
+			]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Filter - begin */
+		if (isset($data['nsf'])) {
+			if( !$this->model_module_neoseo_filter ) {
+				$this->load->model('module/neoseo_filter');
+			}
+			$nsf_category_id = 0;
+			if( isset($data['filter_category_id']) ) {
+				$nsf_category_id = $data['filter_category_id'];
+			}
+			$product_ids = $this->model_module_neoseo_filter->getProductIdsByFilter($data['nsf'],$nsf_category_id);
+			if( !$product_ids ) {
+				return 0;
+			}
+			$sql .= " AND p.product_id IN (" . implode(",", $product_ids) . ") ";
+		}
+		/* NeoSeo Filter - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/seo_pro.php">
+		<operation>
+			<search><![CDATA[
+            foreach ($parts as $keyword) {
+            ]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Filter - start */
+			if( !$this->model_module_neoseo_filter ) {
+				$this->load->model('module/neoseo_filter');
+			}
+			//$nsf_param = $this->model_module_neoseo_filter->getFilterParamFromUrlParts($parts);
+			$nsf_param = $this->model_module_neoseo_filter->getFilterParamFromUrlPartsMultiLang($parts);
+			if( $nsf_param ) {
+				$this->request->get['nsf'] = $nsf_param;
+			}
+			if(isset($this->session->data['need_full_path']) && $this->session->data['need_full_path'] > 0){
+				$full_path = $this->getPathByCategory($this->session->data['need_full_path']);
+				$this->request->get['path'] = $full_path;
+				$this->request->get['route'] = "product/category";
+				unset($this->session->data['need_full_path']);
+				$this->validate();
+				return new Action($this->request->get['route']);
+			}
+			/* NeoSeo Filter - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (!in_array($route, array('product/search'))) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Filter - begin */
+		$manufacturer_id = false;
+		/* NeoSeo Filter - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$seo_url = trim($seo_url, '/');]]></search>
+			<add position="replace"><![CDATA[		/* NeoSeo Filter - begin */
+		if (isset($data['nsf'])) {
+			$category_id = -1;
+			if (isset($category)) {
+				$category_id = (int)$category;
+			}
+			if( !$this->model_module_neoseo_filter ) {
+				$this->load->model('module/neoseo_filter');
+			}
+			$nsf_seo_url = $this->model_module_neoseo_filter->getSeoUrl($data['nsf'],$category_id, $manufacturer_id);
+			if( $nsf_seo_url || $category_id == -1) {
+				unset($data['nsf']);
+				if(strpos($nsf_seo_url,"/") === 0){
+					$postfix = 1;
+					$seo_url = $nsf_seo_url;
+				} else {
+					$seo_url .= "/" . $nsf_seo_url;
+				}
+			}
+ 		}
+
+ 		if(isset($this->session->data['use_end_slash']) && is_array($this->session->data['use_end_slash']) && in_array(trim($seo_url, '/'),$this->session->data['use_end_slash']))
+		{
+			$seo_url = str_replace("//","/",$seo_url);
+			$seo_url = ltrim($seo_url, '/');
+		} else {
+			$seo_url = trim($seo_url, '/');
+		}
+		/* NeoSeo Filter - end */]]></add>
+		</operation>
+	</file>
+
+
+	<file path="system/library/document.php">
+		<operation>
+			<search><![CDATA[
+            private $keywords;
+            ]]></search>
+			<add position="after"><![CDATA[    /* NeoSeo Filter - start */
+    private $noindex = false;
+    /* NeoSeo Filter - end */]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[
+            public function setTitle($title) {
+            ]]></search>
+			<add position="before"><![CDATA[    /* NeoSeo Filter - start */
+    public function nsf_setLinks($links) {
+  	    $this->links = $links;
+    }
+
+    public function nsf_setNoindex($state = false) {
+  	    $this->noindex = $state;
+    }
+
+	public function nsf_isNoindex() {
+		return $this->noindex;
+	}
+    /* NeoSeo Filter - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[
+            $data['scripts'] = $this->document->getScripts();
+            ]]></search>
+			<add position="after"><![CDATA[        /* NeoSeo Filter - start */
+        $data['noindex'] = $this->document->nsf_isNoindex();
+        /* NeoSeo Filter - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/common/header.tpl">
+		<operation>
+			<search><![CDATA[
+            </title>
+            ]]></search>
+			<add position="after"><![CDATA[<?php if ($noindex) { ?>
+    <meta name="robots" content="noindex,nofollow" /><!-- Added by NeoSeo Filter -->
+<?php } ?>]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/product/category.tpl">
+		<operation>
+			<search><![CDATA[<h1><?php echo $heading_title; ?></h1>]]></search>
+			<add position="replace"><![CDATA[                   <!-- NeoSeo Filter - begin -->
+                   <?php if(isset($page_status) && $page_status == 1){ ?>
+                       <?php if(!$description){ ?>
+                            <h1><?php echo isset($filter_page_h1) ? $filter_page_h1 : ''; ?></h1>
+                       <?php }else { ?>
+                           <span class="heading_title"><?php echo $heading_title; ?></span>
+                       <?php } ?>
+                   <?php }else{ ?>
+                       <h1><?php echo $heading_title; ?></h1>
+                   <?php } ?>
+                   <!-- NeoSeo Filter - end -->]]></add>
+		</operation>
+	</file>
+</modification>

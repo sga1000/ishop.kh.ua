@@ -1,0 +1,1275 @@
+<modification>
+	<name>NeoSeo Yandex Translate</name>
+	<version>1.0</version>
+	<code>neoseo_yandex_translate</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua/perevodchik</link>
+
+	<file path="admin/controller/catalog/product.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['product_description'])]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get('neoseo_yandex_translate_status');
+		$data['neoseo_yandex_translate_params'] = $this->config->get('neoseo_yandex_translate_params');
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get('neoseo_yandex_translate_from_language');
+		$data['neoseo_yandex_translate_translate_source'] = $this->config->get('neoseo_yandex_translate_translate_source');
+		$data['neoseo_yandex_translate_button'] = $this->language->get('text_translate_button');
+		$data['neoseo_yandex_translate_title'] = $this->language->get('text_translate_title');
+		$data['neoseo_yandex_translate_success'] = $this->language->get('text_translate_success');
+		$data['neoseo_yandex_translate_continue'] = $this->language->get('text_translate_continue');
+		/* NeoSeo Yandex Translate - end */
+		]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[protected function getList() {]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$this->load->model('tool/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get("neoseo_yandex_translate_status");
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get("neoseo_yandex_translate_from_language");
+		$data['text_translate'] = $this->language->get('text_translate');
+
+		$this->load->model('localisation/language');
+		$languages = $this->model_localisation_language->getLanguages();
+
+		foreach ($languages as $language){
+			$lang_list[$language['language_id']] = $language['code'];
+		}
+		$data['lang_list'] = $lang_list;
+		$data['languages'] = $languages;
+		foreach ($languages as $language){
+			if($language['language_id'] != $data['neoseo_yandex_translate_from_language']) {
+				$data['translate_btns'][$language['code']]['url'] = $this->url->link('tool/neoseo_yandex_translate/TranslateMarked', 'token=' . $this->session->data['token'], 'SSL');
+				$data['translate_btns'][$language['code']]['name'] = $language['name'];
+			}
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (is_file(DIR_IMAGE . $result['image'])) {]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			$lang_title = array();
+			$lang_title  = $this->model_tool_neoseo_yandex_translate->GetLangTitle($result['product_id']);
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="after"><![CDATA[				/* NeoSeo Yandex Translate - begin */
+				'lang_name'  => $lang_title,
+				'translate_status' => isset($result['trans_status']) ? $result['trans_status'] : '',
+				/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['column_image'] = $this->language->get('column_image');]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$data['column_translate'] = $this->language->get('column_translate');
+		$data['text_tranlsate_yes'] = $this->language->get('text_tranlsate_yes');
+		$data['text_tranlsate_no'] = $this->language->get('text_tranlsate_no');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['sort_model'] = $this->url->link('catalog/product', 'token=' . $this->session->data['token'] . '&sort=p.model' . $url, 'SSL');]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if (isset($this->request->get['filter_translate'])) {
+			$url .= '&filter_translate=' . urlencode(html_entity_decode($this->request->get['filter_translate'], ENT_QUOTES, 'UTF-8'));
+		}
+		$data['sort_translate'] = $this->url->link('catalog/product', 'token=' . $this->session->data['token'] . '&sort=p2t.trans_status' . $url, 'SSL');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[public function getProducts($data = array()) {]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if($this->config->get("neoseo_yandex_translate_status")){
+			$sql = "SELECT * FROM " . DB_PREFIX . "product p LEFT JOIN " . DB_PREFIX . "product_description pd ON (p.product_id = pd.product_id)";
+			if (!empty($data['filter_category'])) {
+				$sql .= " LEFT JOIN " . DB_PREFIX . "product_to_category p2c ON (p.product_id = p2c.product_id)";
+			}
+			$sql .= " LEFT JOIN " . DB_PREFIX . "product_to_translate p2t ON (p.product_id = p2t.trans_product_id) ";
+			$sql .= " WHERE pd.language_id = '" . (int)$this->config->get('config_language_id') . "'";
+		}else{
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[if (!empty($data['filter_name'])) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$sort_data = array(]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			'p2t.trans_status',
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/catalog/product_list.tpl">
+		<operation>
+			<search><![CDATA[<button type="button" data-toggle="tooltip" title="<?php echo $button_copy; ?>" class="btn btn-default" ]]></search>
+			<add position="before"><![CDATA[        <!-- NeoSeo Yandex Translate - begin -->
+        <?php if( isset($neoseo_yandex_translate_status) && $neoseo_yandex_translate_status) { ?>
+            <?php foreach($translate_btns as $lang_code => $btn ){ ?>
+                <button type="button" data-lang="<?php echo $lang_code ?>" data-url="<?php echo $btn['url']; ?>"  title="<?php echo $text_translate .' '. $btn['name']; ?>" class="btn-translate btn btn-success"  >&nbsp;<i class="fa fa-globe"></i> <?php echo $text_translate .' '. $btn['name']; ?></button>
+            <?php }?>
+        <?php } ?>
+        <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php if ($sort == 'p.model') { ?>]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php if ($sort == 'p.translate') { ?>
+                    <a href="<?php echo $sort_translate; ?>" class="<?php echo strtolower($order); ?>"><?php echo $column_translate; ?></a>
+                    <?php } else { ?>
+                    <a href="<?php echo $sort_translate; ?>"><?php echo $column_translate; ?></a>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $product['name']; ?></td>]]></search>
+			<add position="replace"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left">
+                    <?php foreach($product['lang_name'] as $lang_code => $pr_name){ ?>
+                    <?php echo '<strong>'.$lang_list[$lang_code].'</strong>' . ' ' . $pr_name . '<br>'; ?>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $product['model']; ?></td>]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php echo ($product['translate_status'])? $text_tranlsate_yes : $text_tranlsate_no; ?></td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<script type="text/javascript"><!--
+$('.btn-translate').on('click', function() {
+    var vals = $(':checkbox').map(function(i,el){
+        if($(el).prop('checked')){
+            return $(el).val();
+        }
+    }).get();
+
+    var lang = $(this).data('lang');
+    var url = $(this).data('url');
+
+    var el = $(this);
+    el.prepend($('<i class="fa fa-refresh fa-spin fa-fw"></i> &nbsp;'));
+
+    $.ajax({
+        'type': "POST",
+        'url': url,
+        'data' :{products: vals, lang: lang},
+        'dataType': 'json',
+        success: function (response) {
+            if(response.success){
+                alert(response.success);
+                location.reload();
+            }else{
+                alert(response.error);
+            }
+            el.find('i.fa-refresh').remove();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(errorThrown);
+            el.find('i.fa-refresh').remove();
+        }
+
+    });
+
+});
+
+//--></script>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/catalog/product_form.tpl">
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="language<?php echo $language['language_id']; ?>">]]></search>
+			<add position="after"><![CDATA[                <!-- NeoSeo Yandex Translate - begin -->
+                <?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+                  <?php if ( !$neoseo_yandex_translate_translate_source ) { ?>
+                    <div class="pull-right">
+                      <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                    </div>
+                  <div class="clearfix"></div>
+                  <?php } else { ?>
+                    <?php if ( $language['language_id'] != $neoseo_yandex_translate_from_language ) { ?>
+                      <div class="pull-right">
+                        <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                      </div>
+                      <div class="clearfix"></div>
+                    <?php } ?>
+                  <?php } ?>
+                <?php } ?>
+                <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+<script>//<!--
+$('.translate-content').click(function(){
+
+      <?php if(isset($neoseo_yandex_translate_from_language) && $neoseo_yandex_translate_translate_source){ ?>
+        var language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+      <?php } else { ?>
+        var language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php } ?>
+        var to_language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php if(isset($neoseo_yandex_translate_translate_source)&& $neoseo_yandex_translate_translate_source){ ?>
+        var from_language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+
+      <?php } else { ?>
+        var from_language_id = $('#language li.active a').attr('href').replace('#language','');
+      <?php } ?>
+
+        var name_fields = 'product_description\\['+ from_language_id +'\\]';
+        var tags = <?php echo $neoseo_yandex_translate_params ? json_encode($neoseo_yandex_translate_params) : '' ?>;
+
+        var name, code, val, name_tag, element_from;
+
+        var parameters = {};
+        parameters.text = {};
+        parameters.language_id = '';
+
+        for(j=0; j < tags.length; j++) {
+            name_tag = tags[j];
+            element_from = $('#language' + from_language_id + ' [name=' + name_fields + '\\[' + name_tag + '\\]]');
+
+          if (element_from.length) {
+                if (name_tag == 'description') {
+                    if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_from.attr('id')].getData === "function") {
+                        val = CKEDITOR.instances[element_from.attr('id')].getData();
+                    } else if (typeof element_from.code === "function") {
+                        val = element_from.code();
+                    } else {
+                        val = element_from.val();
+                    }
+                } else {
+                    val = element_from.val();
+                }
+                parameters['text'][name_tag] = val;
+            }
+        }
+        parameters['language_id'] = to_language_id;
+
+        $.ajax({
+            url: 'index.php?route=tool/neoseo_yandex_translate/translate&token=<?php echo $token; ?>',
+            method: 'post',
+            data: parameters,
+            data_type: 'json',
+            success: function(json) {
+                if (json['success']) {
+
+
+                    for(var k in json['text']) {
+                        name_tag = k;
+                        var new_val = json['text'][k];
+                        var name_fields_to = 'product_description\\['+ to_language_id +'\\]';
+                        var element_to = $('#language' + to_language_id + ' [name=' + name_fields_to + '\\[' + name_tag + '\\]]');
+
+
+                        if (name_tag == 'description') {
+                            if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_to.attr('id')].setData === "function") {
+                                CKEDITOR.instances[element_to.attr('id')].setData(new_val);
+                            } else if (typeof element_to.code === "function") {
+                                element_to.code(new_val);
+                            } else {
+                                element_to.val(new_val);
+                            }
+                        } else {
+                            element_to.val(new_val);
+                        }
+                    }
+                  $('#confirm-translate').modal().show();
+                }
+            }
+        });
+
+});
+//--></script>
+<div class="modal fade" id="confirm-translate" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                <h2 class="modal-title" id="myModalLabel"><?php echo $neoseo_yandex_translate_title; ?></h2>
+            </div>
+            <div class="modal-body">
+                <p><?php echo $neoseo_yandex_translate_success; ?></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal"><?php echo $neoseo_yandex_translate_continue; ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/blog/neoseo_blog_article.php">
+	<operation>
+		<search><![CDATA[if (isset($this->request->post['article_description'])) {]]></search>
+		<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get('neoseo_yandex_translate_status');
+		$data['neoseo_yandex_translate_params'] = $this->config->get('neoseo_yandex_translate_params_blog_articles');
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get('neoseo_yandex_translate_from_language_blog_articles');
+		$data['neoseo_yandex_translate_translate_source'] = $this->config->get('neoseo_yandex_translate_translate_source_blog_articles');
+		$data['neoseo_yandex_translate_button'] = $this->language->get('text_translate_button');
+		$data['neoseo_yandex_translate_title'] = $this->language->get('text_translate_title');
+		$data['neoseo_yandex_translate_success'] = $this->language->get('text_translate_success');
+		$data['neoseo_yandex_translate_continue'] = $this->language->get('text_translate_continue');
+		/* NeoSeo Yandex Translate - end */
+		]]></add>
+	</operation>
+	<operation>
+		<search index="0"><![CDATA[$data = $this->language->load('blog/neoseo_blog_article');]]></search>
+		<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$this->load->model('tool/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get("neoseo_yandex_translate_status");
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get("neoseo_yandex_translate_from_language_blog_articles");
+		$data['text_translate'] = $this->language->get('text_translate');
+
+		$this->load->model('localisation/language');
+		$languages = $this->model_localisation_language->getLanguages();
+
+		foreach ($languages as $language){
+			$lang_list[$language['language_id']] = $language['code'];
+		}
+		$data['lang_list'] = $lang_list;
+		$data['languages'] = $languages;
+		foreach ($languages as $language){
+			if($language['language_id'] != $data['neoseo_yandex_translate_from_language']) {
+				$data['translate_btns'][$language['code']]['url'] = $this->url->link('tool/neoseo_yandex_translate/TranslateMarkedBlogArticle', 'token=' . $this->session->data['token'], 'SSL');
+				$data['translate_btns'][$language['code']]['name'] = $language['name'];
+			}
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+	</operation>
+	<operation>
+		<search><![CDATA[$categories = $this->model_blog_neoseo_blog_article->getArticleCategories($result['article_id']);]]></search>
+		<add position="before"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			$lang_title = array();
+			$lang_title  = $this->model_tool_neoseo_yandex_translate->GetArticleLangTitle($result['article_id']);
+			/* NeoSeo Yandex Translate - end */]]></add>
+	</operation>
+	<operation>
+		<search><![CDATA[$data['articles'][] = array(]]></search>
+		<add position="after"><![CDATA[				/* NeoSeo Yandex Translate - begin */
+				'lang_name'  => $lang_title,
+				'translate_status' => isset($result['trans_status']) ? $result['trans_status'] : '',
+				/* NeoSeo Yandex Translate - end */]]></add>
+	</operation>
+	<operation>
+		<search><![CDATA[$this->response->setOutput($this->load->view('blog/neoseo_blog_article_list.tpl', $data));]]></search>
+		<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$data['column_translate'] = $this->language->get('column_translate');
+		$data['text_tranlsate_yes'] = $this->language->get('text_tranlsate_yes');
+		$data['text_tranlsate_no'] = $this->language->get('text_tranlsate_no');
+		/* NeoSeo Yandex Translate - end */]]></add>
+	</operation>
+	<operation>
+		<search><![CDATA[$data['sort_name'] = $this->url->link('blog/neoseo_blog_article', 'token=' . $this->session->data['token'] . '&sort=bad.name' . $url, 'SSL');]]></search>
+		<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if (isset($this->request->get['filter_translate'])) {
+			$url .= '&filter_translate=' . urlencode(html_entity_decode($this->request->get['filter_translate'], ENT_QUOTES, 'UTF-8'));
+		}
+		$data['sort_translate'] = $this->url->link('blog/neoseo_blog_article', 'token=' . $this->session->data['token'] . '&sort=a2t.trans_status' . $url, 'SSL');
+		/* NeoSeo Yandex Translate - end */]]></add>
+	</operation>
+</file>
+
+	<file path="admin/model/blog/neoseo_blog_article.php">
+		<operation>
+			<search><![CDATA[public function getArticles(]]></search>
+			<add position="after" offset="1"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if($this->config->get("neoseo_yandex_translate_status")){
+			$sql = "SELECT
+				ba.*,
+				bau.name AS author_name,
+				bad.name AS name,
+				a2t.trans_status AS trans_status
+			  FROM `" . DB_PREFIX . "blog_article` ba
+				   LEFT JOIN `" . DB_PREFIX . "blog_article_description` bad ON(ba.article_id=bad.article_id)
+				   LEFT JOIN `" . DB_PREFIX . "blog_author` bau ON(ba.author_id = bau.author_id) ";
+
+
+			$sql .= " LEFT JOIN " . DB_PREFIX . "article_to_translate a2t ON (ba.article_id = a2t.trans_article_id) ";
+		}else{
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search index="2"><![CDATA[if (isset($data['filter_category']) && !empty($data['filter_category'])) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['bad.name',]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			'a2t.trans_status',
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_article_list.tpl">
+		<operation>
+			<search><![CDATA[<button type="button" data-toggle="tooltip" title="<?php echo $button_copy; ?>" class="btn btn-default" ]]></search>
+			<add position="before"><![CDATA[        <!-- NeoSeo Yandex Translate - begin -->
+        <?php if( isset($neoseo_yandex_translate_status) && $neoseo_yandex_translate_status) { ?>
+            <?php foreach($translate_btns as $lang_code => $btn ){ ?>
+                <button type="button" data-lang="<?php echo $lang_code ?>" data-url="<?php echo $btn['url']; ?>"  title="<?php echo $text_translate .' '. $btn['name']; ?>" class="btn-translate btn btn-success"  >&nbsp;<i class="fa fa-globe"></i> <?php echo $text_translate .' '. $btn['name']; ?></button>
+            <?php }?>
+        <?php } ?>
+        <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $column_category; ?></td>	]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php if ($sort == 'a2t.trans_status') { ?>
+                    <a href="<?php echo $sort_translate; ?>" class="<?php echo strtolower($order); ?>"><?php echo $column_translate; ?></a>
+                    <?php } else { ?>
+                    <a href="<?php echo $sort_translate; ?>"><?php echo $column_translate; ?></a>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $article['name']; ?></td>]]></search>
+			<add position="replace"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left">
+                    <?php foreach($article['lang_name'] as $lang_code => $art_name){ ?>
+                    <?php echo '<strong>'.$lang_list[$lang_code].'</strong>' . ' ' . $art_name . '<br>'; ?>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $article['author_name']; ?></td>]]></search>
+			<add position="after"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php echo ($article['translate_status'])? $text_tranlsate_yes : $text_tranlsate_no; ?></td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<script type="text/javascript"><!--
+$('.btn-translate').on('click', function() {
+    var vals = $(':checkbox').map(function(i,el){
+        if($(el).prop('checked')){
+            return $(el).val();
+        }
+    }).get();
+
+    var lang = $(this).data('lang');
+    var url = $(this).data('url');
+
+    var el = $(this);
+    el.prepend($('<i class="fa fa-refresh fa-spin fa-fw"></i> &nbsp;'));
+
+    $.ajax({
+        'type': "POST",
+        'url': url,
+        'data' :{articles: vals, lang: lang},
+        'dataType': 'json',
+        success: function (response) {
+            if(response.success){
+                alert(response.success);
+                location.reload();
+            }else{
+                alert(response.error);
+            }
+            el.find('i.fa-refresh').remove();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(errorThrown);
+            el.find('i.fa-refresh').remove();
+        }
+
+    });
+
+});
+
+//--></script>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_article_form.tpl">
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="language<?php echo $language['language_id']; ?>">]]></search>
+			<add position="after"><![CDATA[                <!-- NeoSeo Yandex Translate - begin -->
+                <?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+                  <?php if ( !$neoseo_yandex_translate_translate_source ) { ?>
+                    <div class="pull-right">
+                      <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                    </div>
+                  <div class="clearfix"></div>
+                  <?php } else { ?>
+                    <?php if ( $language['language_id'] != $neoseo_yandex_translate_from_language ) { ?>
+                      <div class="pull-right">
+                        <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                      </div>
+                      <div class="clearfix"></div>
+                    <?php } ?>
+                  <?php } ?>
+                <?php } ?>
+                <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+<script>//<!--
+$('.translate-content').click(function(){
+
+      <?php if(isset($neoseo_yandex_translate_from_language) && $neoseo_yandex_translate_translate_source){ ?>
+        var language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+      <?php } else { ?>
+        var language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php } ?>
+        var to_language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php if(isset($neoseo_yandex_translate_translate_source)&& $neoseo_yandex_translate_translate_source){ ?>
+        var from_language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+
+      <?php } else { ?>
+        var from_language_id = $('#language li.active a').attr('href').replace('#language','');
+      <?php } ?>
+
+        var name_fields = 'article_description\\['+ from_language_id +'\\]';
+        var tags = <?php echo $neoseo_yandex_translate_params ? json_encode($neoseo_yandex_translate_params) : '' ?>;
+
+        var name, code, val, name_tag, element_from;
+
+        var parameters = {};
+        parameters.text = {};
+        parameters.language_id = '';
+
+        for(j=0; j < tags.length; j++) {
+            name_tag = tags[j];
+            element_from = $('#language' + from_language_id + ' [name=' + name_fields + '\\[' + name_tag + '\\]]');
+
+          if (element_from.length) {
+                if (name_tag == 'description' || name_tag == 'teaser') {
+                    if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_from.attr('id')].getData === "function") {
+                        val = CKEDITOR.instances[element_from.attr('id')].getData();
+                    } else if (typeof element_from.code === "function") {
+                        val = element_from.code();
+                    } else {
+                        val = element_from.val();
+                    }
+                } else {
+                    val = element_from.val();
+                }
+                parameters['text'][name_tag] = val;
+            }
+        }
+        parameters['language_id'] = to_language_id;
+
+        $.ajax({
+            url: 'index.php?route=tool/neoseo_yandex_translate/translate&token=<?php echo $token; ?>',
+            method: 'post',
+            data: parameters,
+            data_type: 'json',
+            success: function(json) {
+                if (json['success']) {
+
+
+                    for(var k in json['text']) {
+                        name_tag = k;
+                        var new_val = json['text'][k];
+                        var name_fields_to = 'article_description\\['+ to_language_id +'\\]';
+                        var element_to = $('#language' + to_language_id + ' [name=' + name_fields_to + '\\[' + name_tag + '\\]]');
+
+
+                        if (name_tag == 'description' || name_tag == 'teaser') {
+                            if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_to.attr('id')].setData === "function") {
+                                CKEDITOR.instances[element_to.attr('id')].setData(new_val);
+                            } else if (typeof element_to.code === "function") {
+                                element_to.code(new_val);
+                            } else {
+                                element_to.val(new_val);
+                            }
+                        } else {
+                            element_to.val(new_val);
+                        }
+                    }
+                  $('#confirm-translate').modal().show();
+                }
+            }
+        });
+
+});
+//--></script>
+<div class="modal fade" id="confirm-translate" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                <h2 class="modal-title" id="myModalLabel"><?php echo $neoseo_yandex_translate_title; ?></h2>
+            </div>
+            <div class="modal-body">
+                <p><?php echo $neoseo_yandex_translate_success; ?></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal"><?php echo $neoseo_yandex_translate_continue; ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/blog/neoseo_blog_category.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['category_description'])) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get('neoseo_yandex_translate_status');
+		$data['neoseo_yandex_translate_params'] = $this->config->get('neoseo_yandex_translate_params_blog_categories');
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get('neoseo_yandex_translate_from_language_blog_categories');
+		$data['neoseo_yandex_translate_translate_source'] = $this->config->get('neoseo_yandex_translate_translate_source_blog_categories');
+		$data['neoseo_yandex_translate_button'] = $this->language->get('text_translate_button');
+		$data['neoseo_yandex_translate_title'] = $this->language->get('text_translate_title');
+		$data['neoseo_yandex_translate_success'] = $this->language->get('text_translate_success');
+		$data['neoseo_yandex_translate_continue'] = $this->language->get('text_translate_continue');
+		/* NeoSeo Yandex Translate - end */
+		]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$data = $this->language->load('blog/neoseo_blog_category');]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$this->load->model('tool/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get("neoseo_yandex_translate_status");
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get("neoseo_yandex_translate_from_language_blog_categories");
+		$data['text_translate'] = $this->language->get('text_translate');
+
+		$this->load->model('localisation/language');
+		$languages = $this->model_localisation_language->getLanguages();
+
+		foreach ($languages as $language){
+			$lang_list[$language['language_id']] = $language['code'];
+		}
+		$data['lang_list'] = $lang_list;
+		$data['languages'] = $languages;
+		foreach ($languages as $language){
+			if($language['language_id'] != $data['neoseo_yandex_translate_from_language']) {
+				$data['translate_btns'][$language['code']]['url'] = $this->url->link('tool/neoseo_yandex_translate/TranslateMarkedBlogCategory', 'token=' . $this->session->data['token'], 'SSL');
+				$data['translate_btns'][$language['code']]['name'] = $language['name'];
+			}
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['categories'][] = array(]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			$lang_title = array();
+			$lang_title  = $this->model_tool_neoseo_yandex_translate->GetCategoryLangTitle($result['category_id']);
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['categories'][] = array(]]></search>
+			<add position="after"><![CDATA[				/* NeoSeo Yandex Translate - begin */
+				'lang_name'  => $lang_title,
+				'translate_status' => isset($result['trans_status']) ? $result['trans_status'] : '',
+				/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->response->setOutput($this->load->view('blog/neoseo_blog_category_list.tpl', $data));]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$data['column_translate'] = $this->language->get('column_translate');
+		$data['text_tranlsate_yes'] = $this->language->get('text_tranlsate_yes');
+		$data['text_tranlsate_no'] = $this->language->get('text_tranlsate_no');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['sort_name'] = $this->url->link('blog/neoseo_blog]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if (isset($this->request->get['filter_translate'])) {
+			$url .= '&filter_translate=' . urlencode(html_entity_decode($this->request->get['filter_translate'], ENT_QUOTES, 'UTF-8'));
+		}
+		$data['sort_translate'] = $this->url->link('blog/neoseo_blog_category', 'token=' . $this->session->data['token'] . '&sort=c2t.trans_status' . $url, 'SSL');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/blog/neoseo_blog_category.php">
+		<operation>
+			<search><![CDATA[public function getCategories(]]></search>
+			<add position="after" offset="1"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if($this->config->get("neoseo_yandex_translate_status")){
+
+			$sql = "SELECT
+				cp.category_id AS category_id,
+				GROUP_CONCAT(cd1.name ORDER BY cp.level SEPARATOR '&nbsp;&nbsp;&gt;&nbsp;&nbsp;') AS name,
+				c1.parent_id, c1.sort_order,
+				c1.status ,
+				c2t.trans_status AS trans_status
+				FROM " . DB_PREFIX . "blog_category_path cp
+				LEFT JOIN " . DB_PREFIX . "blog_category c1 ON (cp.category_id = c1.category_id)
+				LEFT JOIN " . DB_PREFIX . "blog_category c2 ON (cp.path_id = c2.category_id)
+				LEFT JOIN " . DB_PREFIX . "blog_category_description cd1 ON (cp.path_id = cd1.category_id)
+				LEFT JOIN " . DB_PREFIX . "blog_category_description cd2 ON (cp.category_id = cd2.category_id)
+				LEFT JOIN " . DB_PREFIX . "category_to_translate c2t ON (cp.category_id = c2t.trans_category_id)
+				WHERE cd1.language_id = '" . (int) $this->config->get('config_language_id') . "'
+				AND cd2.language_id = '" . (int) $this->config->get('config_language_id') . "'";
+
+		}else{
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$sql = "SELECT cp.category_id AS category_id, GROUP_CONCAT(cd1.name ORDER BY cp.level SEPARATOR '&nbsp;&nbsp;&gt;&nbsp;&nbsp;') AS name]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$sort_data = array(]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			'c2t.trans_status',
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_category_list.tpl">
+		<operation>
+			<search><![CDATA[<button type="button" data-toggle="tooltip" title="<?php echo $button_copy; ?>" class="btn btn-default" ]]></search>
+			<add position="before"><![CDATA[        <!-- NeoSeo Yandex Translate - begin -->
+        <?php if( isset($neoseo_yandex_translate_status) && $neoseo_yandex_translate_status) { ?>
+            <?php foreach($translate_btns as $lang_code => $btn ){ ?>
+                <button type="button" data-lang="<?php echo $lang_code ?>" data-url="<?php echo $btn['url']; ?>"  title="<?php echo $text_translate .' '. $btn['name']; ?>" class="btn-translate btn btn-success"  >&nbsp;<i class="fa fa-globe"></i> <?php echo $text_translate .' '. $btn['name']; ?></button>
+            <?php }?>
+        <?php } ?>
+        <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php if ($sort == 'bc.sort_order') { ?>]]></search>
+			<add position="before" offset="1"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php if ($sort == 'c2t.trans_status') { ?>
+                    <a href="<?php echo $sort_translate; ?>" class="<?php echo strtolower($order); ?>"><?php echo $column_translate; ?></a>
+                    <?php } else { ?>
+                    <a href="<?php echo $sort_translate; ?>"><?php echo $column_translate; ?></a>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $category['name']; ?></td>]]></search>
+			<add position="replace"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left">
+                    <?php foreach($category['lang_name'] as $lang_code => $cat_name){ ?>
+                    <?php echo '<strong>'.$lang_list[$lang_code].'</strong>' . ' ' . $cat_name . '<br>'; ?>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-right"><?php echo $category['sort_order']; ?></td>]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php echo ($category['translate_status'])? $text_tranlsate_yes : $text_tranlsate_no; ?></td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<script type="text/javascript"><!--
+$('.btn-translate').on('click', function() {
+    var vals = $(':checkbox').map(function(i,el){
+        if($(el).prop('checked')){
+            return $(el).val();
+        }
+    }).get();
+
+    var lang = $(this).data('lang');
+    var url = $(this).data('url');
+
+    var el = $(this);
+    el.prepend($('<i class="fa fa-refresh fa-spin fa-fw"></i> &nbsp;'));
+
+    $.ajax({
+        'type': "POST",
+        'url': url,
+        'data' :{categories: vals, lang: lang},
+        'dataType': 'json',
+        success: function (response) {
+            if(response.success){
+                alert(response.success);
+                location.reload();
+            }else{
+                alert(response.error);
+            }
+            el.find('i.fa-refresh').remove();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(errorThrown);
+            el.find('i.fa-refresh').remove();
+        }
+
+    });
+
+});
+
+//--></script>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_category_form.tpl">
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="language<?php echo $language['language_id']; ?>">]]></search>
+			<add position="after"><![CDATA[                <!-- NeoSeo Yandex Translate - begin -->
+                <?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+                  <?php if ( !$neoseo_yandex_translate_translate_source ) { ?>
+                    <div class="pull-right">
+                      <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                    </div>
+                  <div class="clearfix"></div>
+                  <?php } else { ?>
+                    <?php if ( $language['language_id'] != $neoseo_yandex_translate_from_language ) { ?>
+                      <div class="pull-right">
+                        <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                      </div>
+                      <div class="clearfix"></div>
+                    <?php } ?>
+                  <?php } ?>
+                <?php } ?>
+                <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+<script>//<!--
+$('.translate-content').click(function(){
+
+      <?php if(isset($neoseo_yandex_translate_from_language) && $neoseo_yandex_translate_translate_source){ ?>
+        var language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+      <?php } else { ?>
+        var language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php } ?>
+        var to_language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php if(isset($neoseo_yandex_translate_translate_source)&& $neoseo_yandex_translate_translate_source){ ?>
+        var from_language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+
+      <?php } else { ?>
+        var from_language_id = $('#language li.active a').attr('href').replace('#language','');
+      <?php } ?>
+
+        var name_fields = 'category_description\\['+ from_language_id +'\\]';
+        var tags = <?php echo $neoseo_yandex_translate_params ? json_encode($neoseo_yandex_translate_params) : '' ?>;
+
+        var name, code, val, name_tag, element_from;
+
+        var parameters = {};
+        parameters.text = {};
+        parameters.language_id = '';
+
+        for(j=0; j < tags.length; j++) {
+            name_tag = tags[j];
+            element_from = $('#language' + from_language_id + ' [name=' + name_fields + '\\[' + name_tag + '\\]]');
+
+          if (element_from.length) {
+                if (name_tag == 'description') {
+                    if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_from.attr('id')].getData === "function") {
+                        val = CKEDITOR.instances[element_from.attr('id')].getData();
+                    } else if (typeof element_from.code === "function") {
+                        val = element_from.code();
+                    } else {
+                        val = element_from.val();
+                    }
+                } else {
+                    val = element_from.val();
+                }
+                parameters['text'][name_tag] = val;
+            }
+        }
+        parameters['language_id'] = to_language_id;
+
+        $.ajax({
+            url: 'index.php?route=tool/neoseo_yandex_translate/translate&token=<?php echo $token; ?>',
+            method: 'post',
+            data: parameters,
+            data_type: 'json',
+            success: function(json) {
+                if (json['success']) {
+
+
+                    for(var k in json['text']) {
+                        name_tag = k;
+                        var new_val = json['text'][k];
+                        var name_fields_to = 'category_description\\['+ to_language_id +'\\]';
+                        var element_to = $('#language' + to_language_id + ' [name=' + name_fields_to + '\\[' + name_tag + '\\]]');
+
+
+                        if (name_tag == 'description') {
+                            if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_to.attr('id')].setData === "function") {
+                                CKEDITOR.instances[element_to.attr('id')].setData(new_val);
+                            } else if (typeof element_to.code === "function") {
+                                element_to.code(new_val);
+                            } else {
+                                element_to.val(new_val);
+                            }
+                        } else {
+                            element_to.val(new_val);
+                        }
+                    }
+                  $('#confirm-translate').modal().show();
+                }
+            }
+        });
+
+});
+//--></script>
+<div class="modal fade" id="confirm-translate" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                <h2 class="modal-title" id="myModalLabel"><?php echo $neoseo_yandex_translate_title; ?></h2>
+            </div>
+            <div class="modal-body">
+                <p><?php echo $neoseo_yandex_translate_success; ?></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal"><?php echo $neoseo_yandex_translate_continue; ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/blog/neoseo_blog_author.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['author_description'])) {]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get('neoseo_yandex_translate_status');
+		$data['neoseo_yandex_translate_params'] = $this->config->get('neoseo_yandex_translate_params_blog_authors');
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get('neoseo_yandex_translate_from_language_blog_authors');
+		$data['neoseo_yandex_translate_translate_source'] = $this->config->get('neoseo_yandex_translate_translate_source_blog_authors');
+		$data['neoseo_yandex_translate_button'] = $this->language->get('text_translate_button');
+		$data['neoseo_yandex_translate_title'] = $this->language->get('text_translate_title');
+		$data['neoseo_yandex_translate_success'] = $this->language->get('text_translate_success');
+		$data['neoseo_yandex_translate_continue'] = $this->language->get('text_translate_continue');
+		/* NeoSeo Yandex Translate - end */
+		]]></add>
+		</operation>
+		<operation>
+			<search index="0"><![CDATA[$data = $this->language->load('blog/neoseo_blog_author');]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+
+		$this->language->load('catalog/neoseo_yandex_translate');
+		$this->load->model('tool/neoseo_yandex_translate');
+		$data['neoseo_yandex_translate_status'] = $this->config->get("neoseo_yandex_translate_status");
+		$data['neoseo_yandex_translate_from_language'] = $this->config->get("neoseo_yandex_translate_from_language_blog_authors");
+		$data['text_translate'] = $this->language->get('text_translate');
+
+		$this->load->model('localisation/language');
+		$languages = $this->model_localisation_language->getLanguages();
+
+		foreach ($languages as $language){
+			$lang_list[$language['language_id']] = $language['code'];
+		}
+		$data['lang_list'] = $lang_list;
+		$data['languages'] = $languages;
+		foreach ($languages as $language){
+			if($language['language_id'] != $data['neoseo_yandex_translate_from_language']) {
+				$data['translate_btns'][$language['code']]['url'] = $this->url->link('tool/neoseo_yandex_translate/TranslateMarkedBlogAuthor', 'token=' . $this->session->data['token'], 'SSL');
+				$data['translate_btns'][$language['code']]['name'] = $language['name'];
+			}
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['authors'][] = array(]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			$lang_title = array();
+			$lang_title  = $this->model_tool_neoseo_yandex_translate->GetAuthorLangTitle($result['author_id']);
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['authors'][] = array(]]></search>
+			<add position="after"><![CDATA[				/* NeoSeo Yandex Translate - begin */
+				'lang_name'  => $lang_title,
+				'translate_status' => isset($result['trans_status']) ? $result['trans_status'] : '',
+				/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->response->setOutput($this->load->view('blog/neoseo_blog_author_list.tpl', $data));]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		$data['column_translate'] = $this->language->get('column_translate');
+		$data['text_tranlsate_yes'] = $this->language->get('text_tranlsate_yes');
+		$data['text_tranlsate_no'] = $this->language->get('text_tranlsate_no');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['sort_name'] = $this->url->link('blog/neoseo_blog]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if (isset($this->request->get['filter_translate'])) {
+			$url .= '&filter_translate=' . urlencode(html_entity_decode($this->request->get['filter_translate'], ENT_QUOTES, 'UTF-8'));
+		}
+		$data['sort_translate'] = $this->url->link('blog/neoseo_blog_author', 'token=' . $this->session->data['token'] . '&sort=a2t.trans_status' . $url, 'SSL');
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/blog/neoseo_blog_author.php">
+		<operation>
+			<search><![CDATA[public function getAuthors(]]></search>
+			<add position="after" offset="1"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		if($this->config->get("neoseo_yandex_translate_status")){
+
+			$sql = "SELECT
+				ba.*,
+				a2t.trans_status AS trans_status
+				FROM `" . DB_PREFIX . "blog_author` ba
+				LEFT JOIN `" . DB_PREFIX . "blog_author_description` bad ON(ba.author_id=bad.author_id)
+				LEFT JOIN " . DB_PREFIX . "author_to_translate a2t ON (ba.author_id = a2t.trans_author_id)
+				WHERE bad.language_id='" . (int) $this->config->get('config_language_id') . "'";
+
+		}else{
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$sql = "SELECT ba.* FROM `" . DB_PREFIX . "blog_author` ba LEFT JOIN `" . DB_PREFIX . "blog_author_description` bad]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Yandex Translate - begin */
+		}
+		/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$sort_data = array(]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Yandex Translate - begin */
+			'a2t.trans_status',
+			/* NeoSeo Yandex Translate - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_author_list.tpl">
+		<operation>
+			<search><![CDATA[<a href="<?php echo $insert; ?>" data-toggle="tooltip" title="<?php echo $button_add; ?>" class="btn btn-primary"><i class="fa fa-plus"></i></a>]]></search>
+			<add position="before"><![CDATA[        <!-- NeoSeo Yandex Translate - begin -->
+        <?php if( isset($neoseo_yandex_translate_status) && $neoseo_yandex_translate_status) { ?>
+            <?php foreach($translate_btns as $lang_code => $btn ){ ?>
+                <button type="button" data-lang="<?php echo $lang_code ?>" data-url="<?php echo $btn['url']; ?>"  title="<?php echo $text_translate .' '. $btn['name']; ?>" class="btn-translate btn btn-success"  >&nbsp;<i class="fa fa-globe"></i> <?php echo $text_translate .' '. $btn['name']; ?></button>
+            <?php }?>
+        <?php } ?>
+        <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php if ($sort == 'ba.status') { ?>]]></search>
+			<add position="before" offset="1"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php if ($sort == 'a2t.trans_status') { ?>
+                    <a href="<?php echo $sort_translate; ?>" class="<?php echo strtolower($order); ?>"><?php echo $column_translate; ?></a>
+                    <?php } else { ?>
+                    <a href="<?php echo $sort_translate; ?>"><?php echo $column_translate; ?></a>
+                    <?php } ?>
+                  </td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-left"><?php echo $author['status']; ?></td>]]></search>
+			<add position="before"><![CDATA[                  <!-- NeoSeo Yandex Translate - begin -->
+                  <td class="text-left"><?php echo ($author['translate_status'])? $text_tranlsate_yes : $text_tranlsate_no; ?></td>
+                  <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<script type="text/javascript"><!--
+$('.btn-translate').on('click', function() {
+    var vals = $(':checkbox').map(function(i,el){
+        if($(el).prop('checked')){
+            return $(el).val();
+        }
+    }).get();
+
+    var lang = $(this).data('lang');
+    var url = $(this).data('url');
+
+    var el = $(this);
+    el.prepend($('<i class="fa fa-refresh fa-spin fa-fw"></i> &nbsp;'));
+
+    $.ajax({
+        'type': "POST",
+        'url': url,
+        'data' :{authors: vals, lang: lang},
+        'dataType': 'json',
+        success: function (response) {
+            if(response.success){
+                alert(response.success);
+                location.reload();
+            }else{
+                alert(response.error);
+            }
+            el.find('i.fa-refresh').remove();
+        },
+        error: function(XMLHttpRequest, textStatus, errorThrown) {
+            alert(errorThrown);
+            el.find('i.fa-refresh').remove();
+        }
+
+    });
+
+});
+
+//--></script>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/blog/neoseo_blog_author_form.tpl">
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="language<?php echo $language['language_id']; ?>">]]></search>
+			<add position="after"><![CDATA[                <!-- NeoSeo Yandex Translate - begin -->
+                <?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+                  <?php if ( !$neoseo_yandex_translate_translate_source ) { ?>
+                    <div class="pull-right">
+                      <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                    </div>
+                  <div class="clearfix"></div>
+                  <?php } else { ?>
+                    <?php if ( $language['language_id'] != $neoseo_yandex_translate_from_language ) { ?>
+                      <div class="pull-right">
+                        <button type="button" data-toggle="tooltip" title="<?php echo $neoseo_yandex_translate_button; ?>" class="translate-content btn btn-success"><?php echo $neoseo_yandex_translate_button; ?></button>
+                      </div>
+                      <div class="clearfix"></div>
+                    <?php } ?>
+                  <?php } ?>
+                <?php } ?>
+                <!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Yandex Translate - begin -->
+<?php if ($neoseo_yandex_translate_status && count($languages) > 1) { ?>
+<script>//<!--
+$('.translate-content').click(function(){
+
+      <?php if(isset($neoseo_yandex_translate_from_language) && $neoseo_yandex_translate_translate_source){ ?>
+        var language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+      <?php } else { ?>
+        var language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php } ?>
+        var to_language_id = $('#language li.active a').attr('href').replace('#language','');
+
+      <?php if(isset($neoseo_yandex_translate_translate_source)&& $neoseo_yandex_translate_translate_source){ ?>
+        var from_language_id = <?php echo $neoseo_yandex_translate_from_language; ?>;
+
+      <?php } else { ?>
+        var from_language_id = $('#language li.active a').attr('href').replace('#language','');
+      <?php } ?>
+
+        var name_fields = 'category_description\\['+ from_language_id +'\\]';
+        var tags = <?php echo $neoseo_yandex_translate_params ? json_encode($neoseo_yandex_translate_params) : '' ?>;
+
+        var name, code, val, name_tag, element_from;
+
+        var parameters = {};
+        parameters.text = {};
+        parameters.language_id = '';
+
+        for(j=0; j < tags.length; j++) {
+            name_tag = tags[j];
+            element_from = $('#language' + from_language_id + ' [name=' + name_fields + '\\[' + name_tag + '\\]]');
+
+          if (element_from.length) {
+                if (name_tag == 'description' || name_tag == 'teaser') {
+                    if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_from.attr('id')].getData === "function") {
+                        val = CKEDITOR.instances[element_from.attr('id')].getData();
+                    } else if (typeof element_from.code === "function") {
+                        val = element_from.code();
+                    } else {
+                        val = element_from.val();
+                    }
+                } else {
+                    val = element_from.val();
+                }
+                parameters['text'][name_tag] = val;
+            }
+        }
+        parameters['language_id'] = to_language_id;
+
+        $.ajax({
+            url: 'index.php?route=tool/neoseo_yandex_translate/translate&token=<?php echo $token; ?>',
+            method: 'post',
+            data: parameters,
+            data_type: 'json',
+            success: function(json) {
+                if (json['success']) {
+
+
+                    for(var k in json['text']) {
+                        name_tag = k;
+                        var new_val = json['text'][k];
+                        var name_fields_to = 'category_description\\['+ to_language_id +'\\]';
+                        var element_to = $('#language' + to_language_id + ' [name=' + name_fields_to + '\\[' + name_tag + '\\]]');
+
+
+                        if (name_tag == 'description' || name_tag == 'teaser') {
+                            if (typeof CKEDITOR !== 'undefined' && typeof CKEDITOR.instances[element_to.attr('id')].setData === "function") {
+                                CKEDITOR.instances[element_to.attr('id')].setData(new_val);
+                            } else if (typeof element_to.code === "function") {
+                                element_to.code(new_val);
+                            } else {
+                                element_to.val(new_val);
+                            }
+                        } else {
+                            element_to.val(new_val);
+                        }
+                    }
+                  $('#confirm-translate').modal().show();
+                }
+            }
+        });
+
+});
+//--></script>
+<div class="modal fade" id="confirm-translate" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times"></i></button>
+                <h2 class="modal-title" id="myModalLabel"><?php echo $neoseo_yandex_translate_title; ?></h2>
+            </div>
+            <div class="modal-body">
+                <p><?php echo $neoseo_yandex_translate_success; ?></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal"><?php echo $neoseo_yandex_translate_continue; ?></button>
+            </div>
+        </div>
+    </div>
+</div>
+<?php } ?>
+<!-- NeoSeo Yandex Translate - end -->]]></add>
+		</operation>
+	</file>
+</modification>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Order Manager</name>
+    <version>1.0</version>
+    <code>neoseo-order-manager</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua/order-manager</link>
+
+    <file path="admin/controller/common/menu.php">
+        <operation>
+			<search><![CDATA[$data['order']]]></search>
+            <add position="after"><![CDATA[
+		/* NeoSeo Order Manager - begin */
+		$data['neoseo_order_manager'] = false;
+		if( isset($this->session->data['token']) ) {
+			if( !$this->config->get("neoseo_order_manager_hide_unavailable") && $this->user->hasPermission('access','sale/neoseo_order_manager') && $this->config->get("neoseo_order_manager_status")){
+				if($this->config->get("neoseo_order_manager_replace_system_status")){
+					$data['order'] =$this->url->link('sale/neoseo_order_manager', 'token=' .$this->session->data['token'], 'SSL');
+				} else{
+					$this->language->load("sale/neoseo_order_manager");
+					$data['neoseo_order_manager_status'] = $this->config->get("neoseo_order_manager_status");
+					$data['text_neoseo_order_manager'] = $this->language->get("text_neoseo_order_manager");
+					$data['neoseo_order_manager'] = $this->url->link('sale/neoseo_order_manager', 'token=' .$this->session->data['token'], 'SSL');
+				}
+			}
+		}
+		/* NeoSeo Order Manager  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/common/menu.tpl">
+        <operation>
+            <search><![CDATA[<a href="<?php echo $order; ?>"><?php echo $text_order; ?></a>]]></search>
+            <add position="after"><![CDATA[
+      <!-- NeoSeo Order Manager - begin -->
+      <?php if( isset($neoseo_order_manager_status) && $neoseo_order_manager_status == 1) { ?>
+        <li><a href="<?php echo $neoseo_order_manager; ?>"><?php echo $text_neoseo_order_manager; ?></a></li>
+      <?php } ?>
+      <!-- NeoSeo Order Manager - end -->]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/customer/custom_field.php">
+        <operation>
+            <search><![CDATA[		$data['text_address'] = $this->language->get('text_address');
+]]></search>
+            <add position="after"><![CDATA[
+		/* NeoSeo Order Manager - begin */
+		$data['text_product'] = $this->language->get('text_product');
+		/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/language/russian/customer/custom_field.php">
+        <operation>
+            <search><![CDATA[$_['text_address']          = 'Адрес';
+]]></search>
+            <add position="after"><![CDATA[
+/* NeoSeo Order Manager - begin */
+$_['text_product'] = 'Товар';
+/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/language/english/customer/custom_field.php">
+        <operation>
+            <search><![CDATA[$_['text_address']          = 'Адрес';
+]]></search>
+            <add position="after"><![CDATA[
+/* NeoSeo Order Manager - begin */
+$_['text_product'] = 'Product';
+/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/customer/custom_field_form.tpl">
+        <operation>
+            <search><![CDATA[                <option value="address"><?php echo $text_address; ?></option>
+]]></search>
+            <add position="after"><![CDATA[                
+                <!-- NeoSeo Order Manager - begin --><?php } ?>
+                <?php if ($location == 'product') { ?>
+                <option value="product" selected="selected"><?php echo $text_product; ?></option>
+                <?php } else { ?>
+                <option value="product"><?php echo $text_product; ?></option>
+                <!-- NeoSeo Order Manager - end -->]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/api/cart.php">
+        <operation>
+            <search><![CDATA[$taxes = $this->cart->getTaxes();]]></search>
+            <add position="after"><![CDATA[
+			/* NeoSeo Order Manager - begin */
+			if($this->config->get('config_tax') && isset($this->request->get['ignore'])){
+				$taxes['ignore'] = 'true';
+			}
+			/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/api/order.php">
+        <operation>
+            <search><![CDATA[$taxes = $this->cart->getTaxes();]]></search>
+            <add position="after"><![CDATA[
+				/* NeoSeo Order Manager - begin */
+				if($this->config->get('config_tax') && isset($this->request->get['ignore'])){
+					$taxes['ignore'] = 'true';
+				}
+				/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/model/total/tax.php">
+        <operation>
+            <search><![CDATA[public function getTotal(&$total_data, &$total, &$taxes) {]]></search>
+            <add position="after"><![CDATA[
+		/* NeoSeo Order Manager - begin */
+		if(isset($taxes['ignore']) && $taxes['ignore']){
+			$taxes = 0;
+			return;
+		}
+		/* NeoSeo Order Manager - end */]]></add>
+        </operation>
+    </file>
+
+</modification>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Watermark</name>
+    <version>1.0</version>
+    <code>neoseo-watermark</code>
+    <author>NeoSeo</author>
+
+    <file path="admin/controller/common/header.php">
+        <operation>
+            <search><![CDATA[$data['text_logout'] = $this->language->get('text_logout');]]></search>
+            <add position="after"><![CDATA[
+        /* NeoSeo Watermark - begin */
+        $this->language->load('common/neoseo_watermark');
+        $data['text_alert_clean'] = $this->language->get('text_alert_clean');
+        $data['button_clear_cache'] = $this->language->get('button_clear_cache');
+        /* NeoSeo Watermark - end */
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$data['logout'] = $this->url->link('common/logout', 'token=' . $this->session->data['token'], 'SSL');]]></search>
+            <add position="after"><![CDATA[
+        /* NeoSeo Watermark - begin */
+        $data['watermark_enabled'] = $this->config->get('neoseo_watermark_status_0');
+        $data['clear_cache_enabled'] = $this->config->get('neoseo_watermark_header_clear_cache');
+        $data['clear_cache'] = $this->url->link('module/neoseo_watermark/clean', 'token=' . $this->session->data['token'], 'SSL');
+        /* NeoSeo Watermark - end */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/model/tool/image.php">
+        <operation>
+            <search><![CDATA[$extension = pathinfo($filename, PATHINFO_EXTENSION);]]></search>
+            <add position="before"><![CDATA[
+        /* NeoSeo Watermark - begin */
+        //$this->load->model("tool/neoseo_watermark");
+        //return $this->model_tool_neoseo_watermark->resize($filename, $width, $height );
+        /* NeoSeo Watermark - end */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/common/header.tpl">
+        <operation>
+            <search><![CDATA[<ul class="nav pull-right">]]></search>
+            <add position="after"><![CDATA[
+        <!-- NeoSeo Watermark - begin -->
+        <?php if ($watermark_enabled && $clear_cache_enabled) { ?>
+        <li><a href="<?php echo $clear_cache; ?>" style="color: #fff;" data-toggle="tooltip" title="<?php echo $button_clear_cache; ?>" id="clear_cache_btn" class="btn btn-default btn-danger"><i class="fa fa-eraser"></i> <?php echo $button_clear_cache; ?></a></li>
+        <script type="text/javascript">
+            $('#clear_cache_btn').click(function (e) {
+                e.preventDefault();
+                if(confirm("<?php echo $text_alert_clean ?>")){
+                    window.location = $(this).prop('href');
+                }
+            });
+        </script>
+        <?php } ?>
+        <!--  NeoSeo Watermark - end -->
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/model/tool/image.php">
+        <operation>
+            <search><![CDATA[$extension = pathinfo($filename, PATHINFO_EXTENSION);]]></search>
+            <add position="before"><![CDATA[
+        /* NeoSeo Watermark - begin */
+        $this->load->model("tool/neoseo_watermark");
+        return $this->model_tool_neoseo_watermark->resize($filename, $width, $height );
+        /* NeoSeo Watermark - end */
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="system/library/image.php">
+        <operation>
+            <search><![CDATA[public function watermark($watermark, $position = 'bottomright') {]]></search>
+            <add position="before"><![CDATA[	
+            	/* NeoSeo Watermark - begin */
+	protected function log($message)
+	{
+		file_put_contents(DIR_LOGS . "neoseo_watermark.log", date("Y-m-d H:i:s - ") . "NeoSeo Watermark: " . $message . "\r\n", FILE_APPEND);
+	}
+	
+	public function _watermark($file,$left,$top,$width,$height,$angle = 0)
+	{
+		$watermark = new Image($file);
+		$watermark->resize( $width, $height );
+		if( $angle ) {
+			$rotated = imagerotate($watermark->image, (360-(int)$angle), 0xFFFFFF00 );
+			if( !$rotated ) {
+				//$this->log("imagerotate ERROR, skipping angle" );
+			} else {
+				$watermark->image = $rotated;
+				imagesavealpha($watermark->image, true); // http://stackoverflow.com/questions/12082472/php-imagerotate-ruins-alpha-on-png
+				$watermark->info['width'] = imagesx($watermark->image);
+				$watermark->info['height'] = imagesy($watermark->image);
+				$left = $left - ( $watermark->info['width'] - $width ) / 2;
+				$top = $top - ( $watermark->info['height'] - $height ) / 2;
+				$width = $watermark->info['width'];
+				$height = $watermark->info['height'];
+			}
+		}
+		imagealphablending($this->image, true); // http://stackoverflow.com/questions/313070/png-transparency-with-php
+		imagecopy($this->image, $watermark->image, $left, $top, 0, 0, $width, $height);
+	}
+	
+	public function _save($file, $quality = 90, $transparent = true)
+	{
+		$info = pathinfo($file);
+
+		$extension = strtolower($info['extension']);
+		if (is_resource($this->image)) {
+			$image = imagecreatetruecolor($this->width, $this->height);
+			imagesavealpha($image, true);
+
+			if($transparent && $extension == 'png') {
+				$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
+				imagefill($image, 0, 0, $color);
+			} else {
+				$transparent = imagecolorallocatealpha($image, 0, 0, 0, 127);
+				imagefill($image, 0, 0, $transparent);
+				$background = imagecolorallocate($image, 255, 255, 255);
+				imagefilledrectangle($image, 0, 0, $this->width, $this->height, $background);
+			}
+
+			imagecopy($image, $this->image, 0, 0, 0, 0, $this->width, $this->height);
+
+			if ($extension == 'jpeg' || $extension == 'jpg') {
+				imagejpeg($image, $file, $quality);
+			} elseif ($extension == 'png') {
+				imagepng($image, $file);
+			} elseif ($extension == 'gif') {
+				imagegif($image, $file);
+			}
+
+			imagedestroy($this->image);
+			imagedestroy($image);
+			if( method_exists($this,"optimize") ) {
+			    $this->optimize($file);
+			}
+		}
+	}
+	/* NeoSeo Watermark - end */]]></add>
+        </operation>
+    </file>
+
+</modification>

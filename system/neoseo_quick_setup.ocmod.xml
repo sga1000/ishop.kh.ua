@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Quick store setup</name>
+    <version>1.0</version>
+    <code>neoseo_quick_setup</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua/neoseo_quick_setup</link>
+
+    <file path="admin/language/*/common/header.php">
+        <operation>
+            <search><![CDATA[$_['text_order']]]></search>
+            <add position="after"><![CDATA[
+/* NeoSeo Quick Setup */
+$_['text_to_admin']               = 'В Админ. панель';
+/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/language/russian/common/header.php">
+        <operation>
+            <search><![CDATA[<?php ]]></search>
+            <add position="after"><![CDATA[
+/* NeoSeo Quick Setup */
+$_['text_support_all']          = 'Техническая поддержка';
+$_['text_support_telegram']     = 'Поддержка в Telegram';
+$_['text_support_forum']        = 'Задайте вопрос на форуме';
+/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/language/ukrainian/common/header.php">
+        <operation>
+            <search><![CDATA[<?php ]]></search>
+            <add position="after"><![CDATA[
+/* NeoSeo Quick Setup */
+$_['text_support_all']          = 'Технiчна пiдтримка';
+$_['text_support_telegram']     = 'Підтримка в Telegram';
+$_['text_support_forum']        = 'Задайте питання на форумі';
+/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/common/header.php">
+        <operation>
+            <search><![CDATA[$data['title'] = $this->document->getTitle();]]></search>
+            <add position="before"><![CDATA[/* NeoSeo Quick Setup */
+		$data['in_iframe'] = false;
+		if(isset($this->request->get['by_iframe']) && $this->request->get['by_iframe'] == 1){
+			$data['in_iframe'] = true;
+		}
+/* NeoSeo Quick Setup */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[return $this->load->view('common/header.tpl', $data);]]></search>
+            <add position="before"><![CDATA[
+		/* NeoSeo Quick Setup */
+		$this->load->language('module/neoseo_quick_setup');
+		$data['neoseo_qs_title'] = $this->language->get('heading_title_topmenu');
+		$data['neoseo_qs_link'] = $this->url->link('module/neoseo_quick_setup', 'token=' . $this->session->data['token'] . '&slider=1', 'SSL');
+		$data['neoseo_qs_status'] = $this->config->get('neoseo_quick_setup_status');
+
+		$data['neoseo_m2_title'] = $this->language->get('neoseo_m2_title');
+		$data['neoseo_m2_link'] = $this->url->link('module/neoseo_quick_setup/master2', 'token=' . $this->session->data['token'] . '&slider=1', 'SSL');
+
+		$data['neoseo_m3_title'] = $this->language->get('neoseo_m3_title');
+		$data['neoseo_m3_link'] = $this->url->link('module/neoseo_quick_setup/master3', 'token=' . $this->session->data['token'] . '&slider=1', 'SSL');
+
+		$data['neoseo_m4_title'] = $this->language->get('neoseo_m4_title');
+		$data['neoseo_m4_link'] = $this->url->link('module/neoseo_quick_setup/master4', 'token=' . $this->session->data['token'] . '&slider=1', 'SSL');
+
+		$data['text_to_admin'] = $this->language->get('text_to_admin');
+		if(strpos($this->request->get['route'],'neoseo_quick_setup')!== false){
+			$data['inQs'] = true;
+		} else {
+			$data['inQs'] = false;
+		}
+
+		$data['neoseo_quick_setup_complete'] = $this->config->get('neoseo_quick_setup_complete');
+
+		$data['text_support_all'] = $this->language->get('text_support_all');
+		$data['text_support_telegram'] = $this->language->get('text_support_telegram');
+		$data['text_support_forum'] = $this->language->get('text_support_forum');
+
+		/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/common/dashboard.php">
+        <operation>
+            <search><![CDATA[public function index() {]]></search>
+            <add position="after"><![CDATA[
+		/* NeoSeo Quick Setup */
+		if($this->config->get('neoseo_quick_setup_status')){
+			if($this->config->get('neoseo_quick_setup_complete') == 0){
+				$this->response->redirect($this->url->link('module/neoseo_quick_setup', 'token=' . $this->session->data['token'].'&slider=1', 'SSL'));
+				return;
+			}
+		}
+		/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="system/library/url.php">
+        <operation>
+            <search><![CDATA[$url .= 'index.php?route=' . $route;]]></search>
+            <add position="before"><![CDATA[/* NeoSeo Quick Setup */
+		if(isset($_GET['by_iframe']) && $_GET['by_iframe'] == 1){
+			$args.= '&by_iframe=1';
+		}
+/* NeoSeo Quick Setup */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/common/header.tpl">
+        <operation>
+            <search><![CDATA[<div id="container">]]></search>
+            <add position="before"><![CDATA[<!-- NeoSeo Quick Setup -->
+<?php if($in_iframe) { ?>
+<style>
+    #header {
+        display: none !important;
+    }
+
+    #column-left{
+        display: none !important;
+    }
+
+    #footer{
+        display: none !important;
+    }
+
+    #column-left + #content {
+        margin-left: 0px !important;
+    }
+
+</style>
+<? } ?>
+<!-- NeoSeo Quick Setup -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<?php echo $profile; ?>]]></search>
+            <add position="replace"><![CDATA[<!-- NeoSeo Quick Setup -->
+        <?php echo (!$in_iframe)?$profile:""; ?>
+<!-- NeoSeo Quick Setup -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<body]]></search>
+            <add position="before"><![CDATA[
+<!-- NeoSeo Quick Setup -->
+<style>
+
+    .support {
+        color: #111111 !important;
+        font-weight: 600;
+    }
+
+</style>
+<!-- NeoSeo Quick Setup -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<ul class="nav pull-right">]]></search>
+            <add position="after"><![CDATA[
+            <!-- NeoSeo Quick Setup -->
+                <li class="exit-link">
+                    <a target="_blank" href="https://t.me/WebStudioNeoSeo1" class="support-prodavai24"><?php echo $text_support_all; ?></a>
+                </li>
+                <li class="exit-link">
+                    <a target="_blank" href="https://t.me/WebStudioNeoSeo1" class="support"><?php echo $text_support_telegram; ?></a>
+                </li>
+                <li class="exit-link">
+                    <a target="_blank" href="https://www.opencartmasters.com/" class="support"><?php echo $text_support_forum; ?></a>
+                </li>
+            <!-- NeoSeo Quick Setup -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<ul class="nav pull-right">]]></search>
+            <add position="after"><![CDATA[
+<!-- NeoSeo Quick Setup -->
+            <?php if($inQs && $neoseo_quick_setup_complete == 1) { ?>
+            <li class="dropdown site-link">
+                <a href="<?php echo $home; ?>" target="" class="store-box-link"><?php echo $text_to_admin; ?><i class="fa fa-sign-in" aria-hidden="true"></i></a>
+            </li>
+            <?php } ?>
+<!-- NeoSeo Quick Setup -->]]></add>
+        </operation>
+    </file>
+
+
+</modification>

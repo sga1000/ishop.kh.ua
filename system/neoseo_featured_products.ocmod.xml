@@ -1,0 +1,823 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Featured Products</name>
+	<version>1.0</version>
+	<code>neoseo-featured-products</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua/rekomenduemye-tovary</link>
+	
+	<file path="admin/controller/catalog/category.php">
+		<operation>
+			<search><![CDATA[$this->load->model('design/layout');]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Featured Products  - begin */
+		$this->load->model('localisation/language');
+		$this->load->model('catalog/product');
+		$this->load->model('tool/neoseo_featured_products');
+		$this->language->load('catalog/neoseo_featured_products');
+
+		$data['info_modules'] = $this->model_tool_neoseo_featured_products->getModules('product/category');
+
+		$tabs = array();
+		$data['product_module_setting'] = array();
+		if (isset($this->request->get['category_id'])) {
+			$list_tabs = $this->model_tool_neoseo_featured_products->getListCategoryTabs($this->request->get['category_id']);
+			foreach ($data['info_modules'] as $module) {
+				foreach ($list_tabs as $id => $tab) {
+					if($tab['module_id']==$module['module_id']) {
+						$tab['name'] = unserialize($tab['name']);
+						$tabs[$module['module_id']][$tab['tab_id']] = $tab;
+						if ($tab['products']) {
+							$array_products = explode(',', $tab['products']);
+							foreach ($array_products as $product_id) {
+								$product_info = $this->model_catalog_product->getProduct($product_id);
+								if ($product_info) {
+									$tabs[$module['module_id']][$tab['tab_id']]['prod'][$product_info['product_id']] = $product_info['name'];
+								}
+							}
+						}
+					}
+					$data['related_max_id'] = $tab['tab_id'] + 1;
+				}
+			}
+			$module_setting = $this->model_tool_neoseo_featured_products->getCategoryModuleSetting($this->request->get['category_id']);
+			foreach ($module_setting as $id => $setting) {
+				$setting['name'] = unserialize($setting['name']);
+				$data['product_module_setting'][$setting['module_id']] = $setting;
+			}
+			
+		}
+
+		$data['language_id'] = $this->config->get('config_language_id');
+
+		foreach ($this->model_localisation_language->getLanguages() as $language) {
+			if ($language['language_id'] == $data['language_id']) {
+				$new_name[$language ['language_id']] = 'new-tab-name';
+			}
+		}
+		if (!isset($data['related_max_id']))
+			$data['related_max_id'] = 1;
+
+		$modules[$data['related_max_id']] = array(
+			'id' => $data['related_max_id'],
+			'name' => $new_name,
+			'limit' => 5,
+			'width' => 200,
+			'height' => 200,
+			'status' => 0,
+			'order' => 0,
+		);
+		$data['related_tabs'] = $modules;
+		$data['params'] = $data;
+
+		$data['entry_related_title_tab'] = $this->language->get('entry_title_tab');
+		$data['entry_related_title'] = $this->language->get('entry_title');
+		$data['entry_related_template'] = $this->language->get('entry_template');
+		$data['entry_related_limit'] = $this->language->get('entry_limit');
+		$data['entry_related_order'] = $this->language->get('entry_order');
+		$data['entry_related_products'] = $this->language->get('entry_products');
+		$data['entry_related_width'] = $this->language->get('entry_width');
+		$data['entry_related_height'] = $this->language->get('entry_height');
+		$data['entry_related_status'] = $this->language->get('entry_status');
+		$data['text_related_confirm'] = $this->language->get('text_related_confirm');
+		$data['text_warning_category'] = $this->language->get('text_warning_category');
+		$data['tab_related_form'] = str_replace(array("\n", "\r", "'"), '', $this->load->view('catalog/neoseo_featured_products_form.tpl', $data));
+
+		array_pop($data['related_tabs']); //  элемент больше не нужен
+		
+		$data['related_templates'] = array();
+		$template_files = glob(DIR_CATALOG . 'view/theme/default/template/module/neoseo_featured_products*.tpl');
+		if ($template_files) {
+			foreach ($template_files as $template_file) {
+				$template_file_name = str_replace('neoseo_featured_products_', '', basename($template_file, '.tpl'));
+				$data['related_templates'][$template_file_name] = $this->language->get('text_template') . ' - ' . $template_file_name;
+			}
+		}
+		$data['related_tabs'] = $tabs;
+		$data['tab_module_related_tabs'] = $this->language->get('tab_module_related_tabs');
+		$request_category_id = isset($this->request->get['category_id']) ? '&category_id=' . $this->request->get['category_id'] : '';
+		$data['delete_related_tab'] = $this->url->link('catalog/category/deleteCategoryTab', 'token=' . $this->session->data['token'] . $request_category_id, 'SSL');
+		$data['token'] = $this->session->data['token'];
+		/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_category->editCategory(]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Featured Products  - begin */
+			$this->load->model('tool/neoseo_featured_products');
+			if (isset($this->request->post['related_tabs'])) {
+				$this->model_tool_neoseo_featured_products->saveCategoryTabs($this->request->post['related_tabs'], $this->request->get['category_id']);
+				unset($this->request->post['related_tabs']);
+			}
+			if (isset($this->request->post['setting_module'])) {
+				$this->model_tool_neoseo_featured_products->saveCategoryModuleSetting($this->request->post['setting_module'], $this->request->get['category_id']);
+				unset($this->request->post['setting_module']);
+			}
+			/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_category->addCategory(]]></search>
+			<add position="after"><![CDATA[			$this->load->model('tool/neoseo_featured_products');
+			$max_category_id = $this->model_tool_neoseo_featured_products->getMaxIdCategory();
+			if (isset($this->request->post['related_tabs'])) {
+				$this->model_tool_neoseo_featured_products->saveCategoryTabs($this->request->post['related_tabs'], $max_category_id);
+				unset($this->request->post['related_tabs']);
+			}
+			if (isset($this->request->post['setting_module'])) {
+				$this->model_tool_neoseo_featured_products->saveCategoryModuleSetting($this->request->post['setting_module'], $max_category_id);
+				unset($this->request->post['setting_module']);
+			}
+			/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_category->deleteCategory(]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Featured Products  - begin */
+				$this->load->model('tool/neoseo_featured_products');
+				$this->model_tool_neoseo_featured_products->deleteRelatedCategoryTab($category_id);
+				$this->model_tool_neoseo_featured_products->deleteCategoryModuleSetting($category_id);
+				unset($this->request->post['setting_module']);
+				unset($this->request->post['related_tabs']);
+				/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[protected function validateDelete() {]]></search>
+			<add position="before"><![CDATA[
+	/* NeoSeo Featured Products  - begin */
+	public function deleteCategoryTab()
+	{
+		$this->load->model('tool/neoseo_featured_products');
+
+		if (!$this->user->hasPermission('modify', 'catalog/product')) {
+			$data['error_warning'] = $this->language->get('error_permission');
+
+			$data['header'] = $this->load->controller('common/header');
+			$data['column_left'] = $this->load->controller('common/column_left');
+			$data['footer'] = $this->load->controller('common/footer');
+
+			$data['post'] = $this->request->post;
+			$this->response->setOutput($this->render(), $this->config->get('config_compression'));
+			return;
+		} else {
+			if (isset($this->request->get['related_tab_id'])) {
+				$this->model_tool_neoseo_featured_products->deleteCategoryTab(
+						$this->request->get['related_tab_id']
+				);
+
+				$this->session->data['success'] = $this->language->get('text_success');
+			}
+
+			header('location:' . str_replace('&amp;', '&', $this->url->link('catalog/category/edit', 'token=' . $this->session->data['token'] . '&category_id=' . $this->request->get['category_id'], 'SSL')));
+		}
+	}
+		/* NeoSeo Featured Products  - end */
+				]]></add>
+		</operation>
+	</file>
+
+    <file path="admin/view/template/catalog/category_form.tpl">
+        <operation>
+            <search><![CDATA[<a href="#tab-data"]]></search>
+            <add position="after"><![CDATA[	    <!-- NeoSeo Featured Products - begin -->
+        <li><a href="#tab-module-related-tabs" data-toggle="tab"><?php echo $tab_module_related_tabs; ?></a></li>
+        <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[id="tab-design]]></search>
+            <add position="before"><![CDATA[	    <!-- NeoSeo Featured Products - begin -->
+        <div class="tab-pane" id="tab-module-related-tabs">
+        <?php if(count($info_modules)>0) { ?>
+            <ul class="nav nav-tabs">
+            <?php $first = true; foreach ($info_modules as $module) { ?>
+                <li <?php if($first) { $first = false; echo 'class="active"'; }?>>
+                    <a data-toggle="tab" href="#tab-layout-module-<?php echo $module['module_id']; ?>">
+                    <?php echo $module['name']; ?>
+                    </a>
+                </li>
+                <?php } ?>
+            </ul>
+            <div class="tab-content">
+            <?php $first = true; foreach ($info_modules as $module) { ?>
+                <div class="tab-pane <?php if($first) { $first = false; echo 'active'; }?>" id="tab-layout-module-<?php echo $module['module_id'];?>">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <td class="text-center"><?php echo $entry_related_title;?></td>
+                            <td class="text-center"><?php echo $entry_related_template;?></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="attribute-row0">
+                        <td class="text-center" >
+                        <?php foreach ($languages as $language) {  ?>
+                        <div class="input-group">
+                            <span class="input-group-addon"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+                            <input class="form-control" name="setting_module[<?php echo $module['module_id'] ?>][name][<?php echo $language['language_id']; ?>]" value="<?php echo (isset($product_module_setting[$module['module_id']]['name'][$language['language_id']])) ? $product_module_setting[$module['module_id']]['name'][$language['language_id']] : ''; ?>"/>
+                        </div>
+                        <?php } ?>
+                        </td>
+                        <td class="text-left">
+                            <select class="form-control" name="setting_module[<?php echo $module['module_id'] ?>][template]">
+                            <?php foreach ($related_templates as $key_template => $template) { ?>
+                            <?php if (isset($product_module_setting[$module['module_id']]['template']) && $key_template == $product_module_setting[$module['module_id']]['template']) { ?>
+                            <option value="<?php echo $key_template; ?>" selected="selected"><?php echo $template; ?></option>
+                            <?php } else { ?>
+                            <option value="<?php echo $key_template; ?>"><?php echo $template; ?></option>
+                            <?php } ?>
+                            <?php } ?>
+                        </select>
+                        </td>
+                    </table>
+
+                    <div class="col-xs-4 col-md-3 col-lg-3 related_tabs-left">
+                    <ul class="nav nav-pills nav-stacked" id="custom-related_tabs-header">
+                        <?php if(isset($related_tabs[$module['module_id']])){ ?>
+                        <?php $first = true; foreach ($related_tabs[$module['module_id']] as $tab) { ?>
+                        <li <?php if($first) { $first = false; echo 'class="active"'; }?>>
+                            <a data-toggle="tab" href="#tab-label-<?php echo $tab['tab_id']; ?>">
+                            <?php echo $tab['name'][$language_id]; ?>
+                                <button type="button" class="btn btn-xs btn-link delete-tab" rel="tooltip"
+                                    data-original-title="Delete this label" data-container="body"
+                                    onclick="deleteTab( <?php echo $tab['tab_id'] ?> )">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </a>
+                        </li>
+                        <?php } ?>
+                        <?php } ?>
+                        <li>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="new-tab-<?php echo $module['module_id'];?>" placeholder="New tab name" data-bind="value: newTabName">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default add-new-label" rel="tooltip"
+                                        data-original-title="Add a new label" data-container="body" data-module="<?php echo $module['module_id']; ?>">
+                                        <i class="fa fa-plus-circle text-success"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-xs-8 col-md-9 col-lg-9">
+                    <div class="tab-content">
+                        <?php if(isset($related_tabs[$module['module_id']])){ ?>
+                        <?php $first = true; foreach ($related_tabs[$module['module_id']] as $tab) { ?>
+                        <?php if (!isset($related_related_max_id)) $related_related_max_id = $tab['tab_id']; ?>
+                        <div class="tab-pane <?php if($first) { $first = false; echo 'active'; }?>" id="tab-label-<?php echo $tab['tab_id']; ?>">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_status; ?></label>
+                                <div class="col-sm-9">
+                                    <select name="related_tabs[<?php echo $tab['tab_id'];?>][status]" id="input-status" class="form-control">
+                                    <?php if ($tab['status']) { ?>
+                                        <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                        <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php } else { ?>
+                                        <option value="1"><?php echo $text_enabled; ?></option>
+                                        <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" ><?php echo $entry_related_title_tab;?></label>
+                                <div class="col-sm-9">
+                                    <?php foreach ($languages as $language) {  ?>
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+                                        <input class="form-control" name="related_tabs[<?php echo $tab['tab_id']; ?>][name][<?php echo $language['language_id']; ?>]" value="<?php echo (isset($related_tabs[$module['module_id']][$tab['tab_id']]['name'][$language['language_id']])) ? $related_tabs[$module['module_id']][$tab['tab_id']]['name'][$language['language_id']] : ''; ?>"/>
+                                    </div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                            <!--<div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_limit; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][limit]" value="<?php echo (isset($tab['limit'])) ? $tab['limit'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div> -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_width; ?></label>
+                                <div class="col-sm-9">
+                                <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][width]" value="<?php echo (isset($tab['width'])) ? $tab['width'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_height; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][height]" value="<?php echo (isset($tab['height'])) ? $tab['height'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_order; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][order]" value="<?php echo (isset($tab['order'])) ? $tab['order'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group" id="show_products">
+                                <label class="col-sm-3 control-label" for="input-product"><?php echo $entry_related_products; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="tab_product" value="" placeholder="<?php echo $entry_related_products; ?>" id="<?php echo $tab['tab_id'];?>" class="form-control" />
+                                    <div id="label-hand-product-<?php echo $tab['tab_id']?>" class="well well-sm" style="height: 150px; overflow: auto;">
+                                        <?php if(isset($related_tabs[$module['module_id']][$tab['tab_id']]['prod'])){ ?>
+                                        <?php foreach ($related_tabs[$module['module_id']][$tab['tab_id']]['prod'] as $id_product => $name_product) {  ?>
+                                        <div id="label-hand-product<?php echo $id_product; ?>"><i class="fa fa-minus-circle"></i> <?php echo $name_product; ?>
+                                        <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']?>][products][]" value="<?php echo $id_product; ?>" />
+                                        </div>
+                                        <?php } ?>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']; ?>][module_id]" value="<?php echo $module['module_id']; ?>" />
+                            <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']; ?>][tab_id]" value="<?php echo $tab['tab_id']; ?>" />
+                        </div>
+                        <?php } ?>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <?php } else { ?>
+        <p><b><?php echo $text_warning_category;?></b></p>
+        <?php } ?>
+        </div>
+        <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<?php echo $footer; ?>]]></search>
+            <add position="before"><![CDATA[ <!-- NeoSeo Featured Products - begin -->
+<script type="text/javascript"><!--
+function deleteTab(id) {
+            if (!confirm('<?php echo $text_related_confirm; ?>'))
+                return false;
+                $('#form-category').attr('action', '<?php echo str_replace("&amp;","&",$delete_related_tab); ?>' + '&related_tab_id=' + id);
+                $('#form-category').attr('target', '_self');
+                $('#form-category').submit();
+                return true;
+            }
+
+        var one_touch = false;
+            window.token = '<?php echo $token; ?>';
+            var template = '<?php echo $tab_related_form; ?>';
+            var count_label = <?php echo (isset($tab['tab_id']) ? $tab['tab_id'] : 0) ?> ;
+            if (!count_label)
+            count = $("#tab-pills a").length; //заменить на максимальный айди фида
+
+            $(".add-new-label").click(function() {
+            console.log($(this).parents('.tab-pane:first'));
+        if (one_touch)
+            return false;
+            one_touch = true;
+            var name = $("#new-tab-"+$(this).data('module')).val();
+            var tmp_template = template.replace("new-tab-name", name);
+            tmp_template = tmp_template.replace("module-id", $(this).data('module'));
+            $(this).parents('.tab-pane:first').find(".nav-pills li").removeClass('active');
+            $(this).parents('.tab-pane:first').find('.tab-content').find('.tab-pane').removeClass('active');
+            $(this).parents('.tab-pane:first').find(".nav-pills").prepend("<li class='active'><a data-toggle='tab' href='#tab-label-" + count_label + "' >" + name + "</a></li>");
+            $(this).parents('.tab-pane:first').find('.tab-content').append("<div class='tab-pane active' id='tab-label-" + count_label + "'>" + tmp_template + "</div>");
+            $(this).parents('.tab-pane:first').find(".nav-pills li:last a").trigger('click');
+        });
+//--></script>
+<script type="text/javascript"><!--
+    //Поле Товары для меток
+        $('#content').delegate('input[name="tab_product"]', 'focus', function() {
+        $('input[name="tab_product"]').autocomplete({
+        source: function(request, response) {
+        $.ajax({
+        url: 'index.php?route=catalog/product/autocomplete&token=<?php echo $token; ?>&filter_name=' + encodeURIComponent(request),
+            dataType: 'json',
+            success: function(json) {
+            response($.map(json, function(item) {
+            return {
+            label: item['name'],
+            	value: item['product_id']
+            }
+            }));
+            }
+        });
+        },
+            select: function(item) {
+            $('input[name=\'tab_product\']').val('');
+                var id_elem = this.id;
+                $(this).parent().find('#label-hand-product' + item['value']).remove();
+                $(this).parent().find('#label-hand-product-' + id_elem).append('<div id="label-hand-product' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="related_tabs[' + id_elem + '][products][]" value="' + item['value'] + '" /></div>');
+            }
+        });
+            $('div[id^="label-hand-product"').delegate('.fa-minus-circle', 'click', function() {
+        $(this).parent().remove();
+        });
+        });
+        	$('div[id^="label-hand-product-"').delegate('.fa-minus-circle', 'click', function() {
+        $(this).parent().remove();
+        });
+//--></script>
+ <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+    </file>
+	
+	<file path="admin/controller/catalog/product.php">
+		<operation>
+			<search><![CDATA[$this->load->model('design/layout');]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Featured Products  - begin */
+		$this->load->model('localisation/language');
+		$this->load->model('tool/neoseo_featured_products');
+		$this->language->load('catalog/neoseo_featured_products');
+
+		$data['info_modules'] = $this->model_tool_neoseo_featured_products->getModules('product/product');
+
+		$tabs = array();
+		$data['product_module_setting'] = array();
+		if (isset($this->request->get['product_id'])) {
+			$list_tabs = $this->model_tool_neoseo_featured_products->getListProductTabs($this->request->get['product_id']);
+			foreach ($data['info_modules'] as $module) {
+				foreach ($list_tabs as $id => $tab) {
+					if($tab['module_id']==$module['module_id']) {
+						$tab['name'] = unserialize($tab['name']);
+						$tabs[$module['module_id']][$tab['tab_id']] = $tab;
+						if ($tab['products']) {
+							$array_products = explode(',', $tab['products']);
+							foreach ($array_products as $product_id) {
+								$product_info = $this->model_catalog_product->getProduct($product_id);
+								if ($product_info) {
+									$tabs[$module['module_id']][$tab['tab_id']]['prod'][$product_info['product_id']] = $product_info['name'];
+								}
+							}
+						}
+					}
+					$data['related_max_id'] = $tab['tab_id'] + 1;
+				}
+			}
+			$module_setting = $this->model_tool_neoseo_featured_products->getProductModuleSetting($this->request->get['product_id']);
+			foreach ($module_setting as $id => $setting) {
+				$setting['name'] = unserialize($setting['name']);
+				$data['product_module_setting'][$setting['module_id']] = $setting;
+			}
+			
+		}
+
+		$data['language_id'] = $this->config->get('config_language_id');
+
+		foreach ($this->model_localisation_language->getLanguages() as $language) {
+			if ($language['language_id'] == $data['language_id']) {
+				$new_name[$language ['language_id']] = 'new-tab-name';
+			}
+		}
+		if (!isset($data['related_max_id']))
+			$data['related_max_id'] = 1;
+
+		$modules[$data['related_max_id']] = array(
+			'id' => $data['related_max_id'],
+			'name' => $new_name,
+			'limit' => 5,
+			'width' => 200,
+			'height' => 200,
+			'status' => 0,
+			'order' => 0,
+		);
+		$data['related_tabs'] = $modules;
+		$data['params'] = $data;
+
+		$data['entry_related_title_tab'] = $this->language->get('entry_title_tab');
+		$data['entry_related_title'] = $this->language->get('entry_title');
+		$data['entry_related_template'] = $this->language->get('entry_template');
+		$data['entry_related_limit'] = $this->language->get('entry_limit');
+		$data['entry_related_order'] = $this->language->get('entry_order');
+		$data['entry_related_products'] = $this->language->get('entry_products');
+		$data['entry_related_width'] = $this->language->get('entry_width');
+		$data['entry_related_height'] = $this->language->get('entry_height');
+		$data['entry_related_status'] = $this->language->get('entry_status');
+		$data['text_related_confirm'] = $this->language->get('text_related_confirm');
+		$data['text_warning_product'] = $this->language->get('text_warning_product');
+		$data['tab_related_form'] = str_replace(array("\n", "\r", "'"), '', $this->load->view('catalog/neoseo_featured_products_form.tpl', $data));
+
+		array_pop($data['related_tabs']); //  элемент больше не нужен
+		
+		$data['related_templates'] = array();
+		$template_files = glob(DIR_CATALOG . 'view/theme/default/template/module/neoseo_featured_products*.tpl');
+		if ($template_files) {
+			foreach ($template_files as $template_file) {
+				$template_file_name = str_replace('neoseo_featured_products_', '', basename($template_file, '.tpl'));
+				$data['related_templates'][$template_file_name] = $this->language->get('text_template') . ' - ' . $template_file_name;
+			}
+		}
+		$data['related_tabs'] = $tabs;
+		$data['tab_module_related_tabs'] = $this->language->get('tab_module_related_tabs');
+		$request_product_id = isset($this->request->get['product_id']) ? '&product_id=' . $this->request->get['product_id'] : '';
+		$data['delete_related_tab'] = $this->url->link('catalog/product/deleteProductTab', 'token=' . $this->session->data['token'] . $request_product_id, 'SSL');
+		$data['token'] = $this->session->data['token'];
+		/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_product->editProduct(]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Featured Products  - begin */
+			$this->load->model('tool/neoseo_featured_products');
+			if (isset($this->request->post['related_tabs'])) {
+				$this->model_tool_neoseo_featured_products->saveProductTabs($this->request->post['related_tabs'], $this->request->get['product_id']);
+				unset($this->request->post['related_tabs']);
+			}
+			if (isset($this->request->post['setting_module'])) {
+				$this->model_tool_neoseo_featured_products->saveProductModuleSetting($this->request->post['setting_module'], $this->request->get['product_id']);
+				unset($this->request->post['setting_module']);
+			}
+			/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_product->addProduct(]]></search>
+			<add position="after"><![CDATA[			$this->load->model('tool/neoseo_featured_products');
+			$max_product_id = $this->model_tool_neoseo_featured_products->getMaxIdProduct();
+			if (isset($this->request->post['related_tabs'])) {
+				$this->model_tool_neoseo_featured_products->saveProductTabs($this->request->post['related_tabs'], $max_product_id);
+				unset($this->request->post['related_tabs']);
+			}
+			if (isset($this->request->post['setting_module'])) {
+				$this->model_tool_neoseo_featured_products->saveProductModuleSetting($this->request->post['setting_module'], $max_product_id);
+				unset($this->request->post['setting_module']);
+			}
+			/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->model_catalog_product->deleteProduct(]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo Featured Products  - begin */
+				$this->load->model('tool/neoseo_featured_products');
+				$this->model_tool_neoseo_featured_products->deleteRelatedProductTab($product_id);
+				$this->model_tool_neoseo_featured_products->deleteProductModuleSetting($product_id);
+				unset($this->request->post['setting_module']);
+				unset($this->request->post['related_tabs']);
+				/* NeoSeo Featured Products  - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[protected function validateDelete() {]]></search>
+			<add position="before"><![CDATA[
+	/* NeoSeo Featured Products  - begin */
+	public function deleteProductTab()
+	{
+		$this->load->model('tool/neoseo_featured_products');
+
+		if (!$this->user->hasPermission('modify', 'catalog/product')) {
+			$data['error_warning'] = $this->language->get('error_permission');
+
+			$data['header'] = $this->load->controller('common/header');
+			$data['column_left'] = $this->load->controller('common/column_left');
+			$data['footer'] = $this->load->controller('common/footer');
+
+			$data['post'] = $this->request->post;
+			$this->response->setOutput($this->render(), $this->config->get('config_compression'));
+			return;
+		} else {
+			if (isset($this->request->get['related_tab_id'])) {
+				$this->model_tool_neoseo_featured_products->deleteProductTab(
+						$this->request->get['related_tab_id']
+				);
+
+				$this->session->data['success'] = $this->language->get('text_success');
+			}
+
+			header('location:' . str_replace('&amp;', '&', $this->url->link('catalog/product/edit', 'token=' . $this->session->data['token'] . '&product_id=' . $this->request->get['product_id'], 'SSL')));
+		}
+	}
+		/* NeoSeo Featured Products  - end */
+				]]></add>
+		</operation>
+	</file>
+
+    <file path="admin/view/template/catalog/product_form.tpl">
+        <operation>
+            <search><![CDATA[<a href="#tab-links"]]></search>
+            <add position="after"><![CDATA[	    <!-- NeoSeo Featured Products - begin -->
+        <li><a href="#tab-module-related-tabs" data-toggle="tab"><?php echo $tab_module_related_tabs; ?></a></li>
+        <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[id="tab-attribute]]></search>
+            <add position="before"><![CDATA[	    <!-- NeoSeo Featured Products - begin -->
+        <div class="tab-pane" id="tab-module-related-tabs">
+        <?php if(count($info_modules)>0) { ?>
+            <ul class="nav nav-tabs">
+            <?php $first = true; foreach ($info_modules as $module) { ?>
+                <li <?php if($first) { $first = false; echo 'class="active"'; }?>>
+                    <a data-toggle="tab" href="#tab-layout-module-<?php echo $module['module_id']; ?>">
+                    <?php echo $module['name']; ?>
+                    </a>
+                </li>
+                <?php } ?>
+            </ul>
+            <div class="tab-content">
+            <?php $first = true; foreach ($info_modules as $module) { ?>
+                <div class="tab-pane <?php if($first) { $first = false; echo 'active'; }?>" id="tab-layout-module-<?php echo $module['module_id'];?>">
+                <table class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <td class="text-center"><?php echo $entry_related_title;?></td>
+                            <td class="text-center"><?php echo $entry_related_template;?></td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <tr id="attribute-row0">
+                        <td class="text-center" >
+                        <?php foreach ($languages as $language) {  ?>
+                        <div class="input-group">
+                            <span class="input-group-addon"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+                            <input class="form-control" name="setting_module[<?php echo $module['module_id'] ?>][name][<?php echo $language['language_id']; ?>]" value="<?php echo (isset($product_module_setting[$module['module_id']]['name'][$language['language_id']])) ? $product_module_setting[$module['module_id']]['name'][$language['language_id']] : ''; ?>"/>
+                        </div>
+                        <?php } ?>
+                        </td>
+                        <td class="text-left">
+                            <select class="form-control" name="setting_module[<?php echo $module['module_id'] ?>][template]">
+                            <?php foreach ($related_templates as $key_template => $template) { ?>
+                            <?php if (isset($product_module_setting[$module['module_id']]['template']) && $key_template == $product_module_setting[$module['module_id']]['template']) { ?>
+                            <option value="<?php echo $key_template; ?>" selected="selected"><?php echo $template; ?></option>
+                            <?php } else { ?>
+                            <option value="<?php echo $key_template; ?>"><?php echo $template; ?></option>
+                            <?php } ?>
+                            <?php } ?>
+                        </select>
+                        </td>
+                    </table>
+
+                    <div class="col-xs-4 col-md-3 col-lg-3 related_tabs-left">
+                    <ul class="nav nav-pills nav-stacked" id="custom-related_tabs-header">
+                        <?php if(isset($related_tabs[$module['module_id']])){ ?>
+                        <?php $first = true; foreach ($related_tabs[$module['module_id']] as $tab) { ?>
+                        <li <?php if($first) { $first = false; echo 'class="active"'; }?>>
+                            <a data-toggle="tab" href="#tab-label-<?php echo $tab['tab_id']; ?>">
+                            <?php echo $tab['name'][$language_id]; ?>
+                                <button type="button" class="btn btn-xs btn-link delete-tab" rel="tooltip"
+                                    data-original-title="Delete this label" data-container="body"
+                                    onclick="deleteTab( <?php echo $tab['tab_id'] ?> )">
+                                    <i class="fa fa-trash text-danger"></i>
+                                </button>
+                            </a>
+                        </li>
+                        <?php } ?>
+                        <?php } ?>
+                        <li>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="new-tab-<?php echo $module['module_id'];?>" placeholder="New tab name" data-bind="value: newTabName">
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default add-new-label" rel="tooltip"
+                                        data-original-title="Add a new label" data-container="body" data-module="<?php echo $module['module_id']; ?>">
+                                        <i class="fa fa-plus-circle text-success"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-xs-8 col-md-9 col-lg-9">
+                    <div class="tab-content">
+                        <?php if(isset($related_tabs[$module['module_id']])){ ?>
+                        <?php $first = true; foreach ($related_tabs[$module['module_id']] as $tab) { ?>
+                        <?php if (!isset($related_related_max_id)) $related_related_max_id = $tab['tab_id']; ?>
+                        <div class="tab-pane <?php if($first) { $first = false; echo 'active'; }?>" id="tab-label-<?php echo $tab['tab_id']; ?>">
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_status; ?></label>
+                                <div class="col-sm-9">
+                                    <select name="related_tabs[<?php echo $tab['tab_id'];?>][status]" id="input-status" class="form-control">
+                                    <?php if ($tab['status']) { ?>
+                                        <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                                        <option value="0"><?php echo $text_disabled; ?></option>
+                                    <?php } else { ?>
+                                        <option value="1"><?php echo $text_enabled; ?></option>
+                                        <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                                    <?php } ?>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" ><?php echo $entry_related_title_tab;?></label>
+                                <div class="col-sm-9">
+                                    <?php foreach ($languages as $language) {  ?>
+                                    <div class="input-group">
+                                        <span class="input-group-addon"><img src="view/image/flags/<?php echo $language['image']; ?>" title="<?php echo $language['name']; ?>" /></span>
+                                        <input class="form-control" name="related_tabs[<?php echo $tab['tab_id']; ?>][name][<?php echo $language['language_id']; ?>]" value="<?php echo (isset($related_tabs[$module['module_id']][$tab['tab_id']]['name'][$language['language_id']])) ? $related_tabs[$module['module_id']][$tab['tab_id']]['name'][$language['language_id']] : ''; ?>"/>
+                                    </div>
+                                    <?php } ?>
+                                </div>
+                            </div>
+                            <!--<div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_limit; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][limit]" value="<?php echo (isset($tab['limit'])) ? $tab['limit'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div> -->
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_width; ?></label>
+                                <div class="col-sm-9">
+                                <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][width]" value="<?php echo (isset($tab['width'])) ? $tab['width'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_height; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][height]" value="<?php echo (isset($tab['height'])) ? $tab['height'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-3 control-label" for="input-status"><?php echo $entry_related_order; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="related_tabs[<?php echo $tab['tab_id'];?>][order]" value="<?php echo (isset($tab['order'])) ? $tab['order'] : ''; ?>" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="form-group" id="show_products">
+                                <label class="col-sm-3 control-label" for="input-product"><?php echo $entry_related_products; ?></label>
+                                <div class="col-sm-9">
+                                    <input type="text" name="tab_product" value="" placeholder="<?php echo $entry_related_products; ?>" id="<?php echo $tab['tab_id'];?>" class="form-control" />
+                                    <div id="label-hand-product-<?php echo $tab['tab_id']?>" class="well well-sm" style="height: 150px; overflow: auto;">
+                                        <?php if(isset($related_tabs[$module['module_id']][$tab['tab_id']]['prod'])){ ?>
+                                        <?php foreach ($related_tabs[$module['module_id']][$tab['tab_id']]['prod'] as $id_product => $name_product) {  ?>
+                                        <div id="label-hand-product<?php echo $id_product; ?>"><i class="fa fa-minus-circle"></i> <?php echo $name_product; ?>
+                                        <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']?>][products][]" value="<?php echo $id_product; ?>" />
+                                        </div>
+                                        <?php } ?>
+                                        <?php } ?>
+                                    </div>
+                                </div>
+                            </div>
+                            <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']; ?>][module_id]" value="<?php echo $module['module_id']; ?>" />
+                            <input type="hidden" name="related_tabs[<?php echo $tab['tab_id']; ?>][tab_id]" value="<?php echo $tab['tab_id']; ?>" />
+                        </div>
+                        <?php } ?>
+                        <?php } ?>
+                    </div>
+                </div>
+            </div>
+            <?php } ?>
+        </div>
+        <?php } else { ?>
+        <p><b><?php echo $text_warning_product;?></b></p>
+        <?php } ?>
+        </div>
+        <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<?php echo $footer; ?>]]></search>
+            <add position="before"><![CDATA[ <!-- NeoSeo Featured Products - begin -->
+<script type="text/javascript"><!--
+function deleteTab(id) {
+            if (!confirm('<?php echo $text_related_confirm; ?>'))
+                return false;
+                $('#form-product').attr('action', '<?php echo str_replace("&amp;","&",$delete_related_tab); ?>' + '&related_tab_id=' + id);
+                $('#form-product').attr('target', '_self');
+                $('#form-product').submit();
+                return true;
+            }
+
+        var one_touch = false;
+            window.token = '<?php echo $token; ?>';
+            var template = '<?php echo $tab_related_form; ?>';
+            var count_label = <?php echo (isset($tab['tab_id']) ? $tab['tab_id'] : 0) ?> ;
+            if (!count_label)
+            count = $("#tab-pills a").length; //заменить на максимальный айди фида
+
+            $(".add-new-label").click(function() {
+            console.log($(this).parents('.tab-pane:first'));
+        if (one_touch)
+            return false;
+            one_touch = true;
+            var name = $("#new-tab-"+$(this).data('module')).val();
+            var tmp_template = template.replace("new-tab-name", name);
+            tmp_template = tmp_template.replace("module-id", $(this).data('module'));
+            $(this).parents('.tab-pane:first').find(".nav-pills li").removeClass('active');
+            $(this).parents('.tab-pane:first').find('.tab-content').find('.tab-pane').removeClass('active');
+            $(this).parents('.tab-pane:first').find(".nav-pills").prepend("<li class='active'><a data-toggle='tab' href='#tab-label-" + count_label + "' >" + name + "</a></li>");
+            $(this).parents('.tab-pane:first').find('.tab-content').append("<div class='tab-pane active' id='tab-label-" + count_label + "'>" + tmp_template + "</div>");
+            $(this).parents('.tab-pane:first').find(".nav-pills li:last a").trigger('click');
+        });
+//--></script>
+<script type="text/javascript"><!--
+    //Поле Товары для меток
+        $('#content').delegate('input[name="tab_product"]', 'focus', function() {
+        $('input[name="tab_product"]').autocomplete({
+        source: function(request, response) {
+        $.ajax({
+        url: 'index.php?route=catalog/product/autocomplete&token=<?php echo $token; ?>&filter_name=' + encodeURIComponent(request),
+            dataType: 'json',
+            success: function(json) {
+            response($.map(json, function(item) {
+            return {
+            label: item['name'],
+            	value: item['product_id']
+            }
+            }));
+            }
+        });
+        },
+            select: function(item) {
+            $('input[name=\'tab_product\']').val('');
+                var id_elem = this.id;
+                $(this).parent().find('#label-hand-product' + item['value']).remove();
+                $(this).parent().find('#label-hand-product-' + id_elem).append('<div id="label-hand-product' + item['value'] + '"><i class="fa fa-minus-circle"></i> ' + item['label'] + '<input type="hidden" name="related_tabs[' + id_elem + '][products][]" value="' + item['value'] + '" /></div>');
+            }
+        });
+            $('div[id^="label-hand-product"').delegate('.fa-minus-circle', 'click', function() {
+        $(this).parent().remove();
+        });
+        });
+        	$('div[id^="label-hand-product-"').delegate('.fa-minus-circle', 'click', function() {
+        $(this).parent().remove();
+        });
+//--></script>
+ <!-- NeoSeo Featured Products - end -->]]></add>
+        </operation>
+    </file>
+</modification>

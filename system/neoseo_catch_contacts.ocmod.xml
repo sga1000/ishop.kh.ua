@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Catch Contacts</name>
+    <version>1.0</version>
+    <code>neoseo-catch-contacts</code>
+    <author>NeoSeo</author>
+
+     <file path="admin/controller/common/menu.php">
+        <operation>
+            <search><![CDATA[$data['backup']]]></search>
+            <add position="after"><![CDATA[				 /* NeoSeo Catch Contacts - begin */
+				$data['neoseo_catch_contacts'] = false;
+				if( isset($this->session->data['token']) ) {
+					if( $this->user->hasPermission('access','sale/neoseo_catch_contacts')){
+						$this->language->load("sale/neoseo_catch_contacts");
+						$data['text_neoseo_catch_contacts'] = $this->language->get("text_neoseo_catch_contacts");
+						$data['neoseo_catch_contacts'] = $this->url->link('sale/neoseo_catch_contacts', 'token=' .$this->session->data['token'], 'SSL');
+					}
+				}
+				/* NeoSeo Catch Contacts  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/common/menu.tpl">
+        <operation>
+            <search><![CDATA[<a href="<?php echo $order; ?>"><?php echo $text_order; ?></a>]]></search>
+            <add position="after"><![CDATA[		<!-- NeoSeo Catch Contacts - begin -->
+			 <?php if($neoseo_catch_contacts) { ?>
+				 <li><a href="<?php echo $neoseo_catch_contacts; ?>"><?php echo $text_neoseo_catch_contacts; ?></a></li>
+			<?php } ?>
+	  <!-- NeoSeo Catch Contacts - end -->]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/model/extension/module.php">
+        <operation>
+            <search><![CDATA[return json_decode($query->row['setting'], true);]]></search>
+            <add position="replace"><![CDATA[/* NeoSeo Catch Contacts - begin */
+			$settings = json_decode($query->row['setting'], true);
+			$settings['module_id'] = $module_id;
+			return $settings;
+			/* NeoSeo Catch Contacts - end */]]></add>
+        </operation>
+    </file>
+
+</modification>

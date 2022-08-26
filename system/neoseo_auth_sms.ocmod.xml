@@ -1,0 +1,817 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Auth SMS</name>
+	<version>5</version>
+	<code>neoseo-auth-sms</code>
+	<author>NeoSeo</author>
+	<link>http://neoseo.com.ua/neoseo-auth-sms</link>
+
+	<file path="system/library/customer.php">
+		<operation>
+			<search><![CDATA[public function logout() {]]></search>
+			<add position="before"><![CDATA[	/* NeoSeo Auth SMS - begin */
+	public function loginBySms($telephone, $password) {
+
+		$customer_query = $this->db->query("SELECT * FROM " . DB_PREFIX . "customer WHERE telephone LIKE '%" . $this->db->escape($telephone) . "%' AND (password = SHA1(CONCAT(salt, SHA1(CONCAT(salt, SHA1('" . $this->db->escape($password) . "'))))) OR password = '" . $this->db->escape(md5($password)) . "') AND status = '1' LIMIT 1");
+
+		if ($customer_query->num_rows) {
+			$this->session->data['customer_id'] = $customer_query->row['customer_id'];
+
+			$this->customer_id = $customer_query->row['customer_id'];
+			$this->firstname = $customer_query->row['firstname'];
+			$this->lastname = $customer_query->row['lastname'];
+			$this->customer_group_id = $customer_query->row['customer_group_id'];
+			$this->email = $customer_query->row['email'];
+			$this->telephone = $customer_query->row['telephone'];
+			$this->fax = $customer_query->row['fax'];
+			$this->newsletter = $customer_query->row['newsletter'];
+			$this->address_id = $customer_query->row['address_id'];
+
+			$this->db->query("UPDATE " . DB_PREFIX . "customer SET ip = '" . $this->db->escape($this->request->server['REMOTE_ADDR']) . "' WHERE customer_id = '" . (int)$this->customer_id . "'");
+
+			return true;
+		} else {
+			return false;
+		}
+	}
+	/* NeoSeo Auth SMS - end */
+	]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['scripts'] = $this->document->getScripts();]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS- begin */
+		$this->document->addScript('catalog/view/javascript/jquery/jquery.maskedinput.min.js');
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/model/account/customer.php">
+		<operation>
+			<search><![CDATA[$this->load->model('account/customer_group');]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Auth SMS - begin */
+		if (isset($data['telephone'])){
+			$data['telephone'] = preg_replace("/[^0-9]/", '', $data['telephone']);
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/{neoseo_login.php,login.php}">
+		<operation>
+			<search><![CDATA[$data['column_left'] = $this->load->controller('common/column_left');]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		$this->language->load('module/neoseo_auth_sms');
+		$data['entry_telephone'] = $this->language->get('entry_telephone');
+		$data['text_send_sms'] = $this->language->get('text_send_sms');
+		$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+		$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+		// Captcha
+		if ($this->config->get($this->config->get('neoseo_auth_sms_captcha') . '_status'))  {
+			$data['captcha'] = $this->load->controller('captcha/' . $this->config->get('neoseo_auth_sms_captcha'), $this->error);
+		} else {
+			$data['captcha'] = '';
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$login_info = $this->model_account_customer->getLoginAttempts($this->request->post['email']);]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') == 1){
+			$telephone = $this->request->post['telephone_auth'];
+			$telephone = preg_replace('/[^0-9]/', '', urldecode($telephone));
+			if (!$this->customer->loginBySms($telephone, $this->request->post['password'])) {
+				$this->load->language('module/neoseo_auth_sms');
+				$this->error['warning'] = $this->language->get('error_sms_login');
+			}else{
+				$this->load->model('module/neoseo_auth_sms');
+				$this->model_module_neoseo_auth_sms->deleteLoginAttempts($telephone);
+			}
+		}else{
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[return !$this->error;]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Auth SMS - begin */
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['error_warning'] = $this->error['warning'];]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		}elseif (isset($this->session->data['error_warning'])) {
+			$data['error_warning'] = $this->session->data['error_warning'];
+			unset($this->session->data['error_warning']);
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/neoseo_unistor/template/account/neoseo_account_login.tpl">
+		<operation>
+			<search><![CDATA[<div class="form-group col-xs-12 col-sm-4 col-mail">]]></search>
+			<add position="replace"><![CDATA[                            <!-- NeoSeo Auth SMS - begin -->
+                            <?php if($neoseo_auth_sms_status != 1) { ?>
+                                <div class="form-group col-xs-12 col-sm-4 col-mail">
+                            <?php }else{ ?>
+                                <div class="form-group col-xs-12 col-sm-4 col-phone">
+                            <?php } ?>
+                            <!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="text" name="email" value="<?php echo $email; ?>" placeholder="<?php echo $entry_email; ?>" id="input-email" class="form-control"/>]]></search>
+			<add position="replace"><![CDATA[                            <!-- NeoSeo Auth SMS - begin -->
+                            <?php if($neoseo_auth_sms_status != 1) { ?>
+                                <input type="text" name="email" value="<?php echo $email; ?>" placeholder="<?php echo $entry_email; ?>" id="input-email" class="form-control"/>
+                            <?php }else{ ?>
+                                <input type="text" name="telephone_auth" value="" placeholder="<?php echo $entry_telephone; ?>" id="input-telephone-auth" class="form-control"/>
+                                <input id="input-email" type="hidden" name="email" value=""/>
+                                <input type="hidden" name="type" value="1" />
+                                <input type="hidden" name="auth_sms" value="1" />
+                            <?php } ?>
+                            <!-- NeoSeo Auth SMS - end -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class="form-group col-xs-12 col-sm-4 col-psw">]]></search>
+			<add position="before"><![CDATA[
+                        <!-- NeoSeo Auth SMS - begin -->
+                        <?php echo $captcha; ?>
+                        <?php if($neoseo_auth_sms_status != 1) { ?>
+                        <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class=" login-btns col-sm-5 block-flex">]]></search>
+			<add position="before"><![CDATA[
+                        <!-- NeoSeo Auth SMS - begin -->
+                        <?php } ?>
+                        <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary btn-login"/>]]></search>
+			<add position="before"><![CDATA[
+                                <!-- NeoSeo Auth SMS - begin -->
+                                <?php if($neoseo_auth_sms_status == 1) { ?>
+                                    <input type="submit" id="send-sms-btn" value="<?php echo $text_send_sms; ?>" class="btn btn-primary btn-login"/>
+                                <?php }else{ ?>
+                                <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary btn-login"/>]]></search>
+			<add position="after"><![CDATA[
+                                <!-- NeoSeo Auth SMS - begin -->
+                                <?php } ?>
+                                <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a href="<?php echo $register; ?>" class="btn btn-primary btn-reg"><?php echo $text_register ?></a>]]></search>
+			<add position="before"><![CDATA[                                    <!-- NeoSeo Auth SMS - begin -->
+                                    <?php if($neoseo_auth_sms_status != 1) { ?>
+                                    <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a href="<?php echo $register; ?>" class="btn btn-primary btn-reg"><?php echo $text_register ?></a>]]></search>
+			<add position="after"><![CDATA[                                    <!-- NeoSeo Auth SMS - begin -->
+                                    <?php } ?>
+                                    <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="after"><![CDATA[
+<!-- NeoSeo Auth SMS - begin -->
+<?php if($neoseo_auth_sms_status == 1) { ?>
+<script>
+    $(function () {
+        <?php if(isset($auth_sms_mask) && $auth_sms_mask){ ?>
+        $("#input-telephone-auth").mask("<?php echo $auth_sms_mask;?>");
+        <?php } ?>
+        $('body').on('click', '#send-sms-btn',sendSms);
+        $('body').on('click', '#login-by-sms-btn', checkPassword);
+
+        function sendSms(e) {
+            e.preventDefault();
+            $('.alert-danger').remove();
+            $.ajax({
+                url: 'index.php?route=module/neoseo_auth_sms/processPassword',
+                type:'POST',
+                data: $( this ).form().serializeArray(),
+                success: function (json) {
+                    $('.alert').remove();
+
+                    if (!json['errors']) {
+                        $('.login-block').prepend('<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i>' + json["success"] + '</div>');
+                        $('.col-phone').after('<div class="form-group col-xs-12 col-sm-4 col-psw"><input type="password" name="password" value="<?php echo $password; ?>" placeholder="<?php echo $entry_password; ?>" id="input-password-auth" class="form-control"/></div>');
+                        $('#send-sms-btn').val('<?php echo $button_login; ?>');
+                        $('#send-sms-btn').attr('id', 'login-by-sms-btn');
+                        $('#input-telephone-auth').attr('readonly','true');
+                    }else {
+                        $('.login-block').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i>' + json["errors"] + '</div>');
+                    }
+                }
+            })
+        }
+
+        function checkPassword(e) {
+            e.preventDefault();
+            $('.alert-danger').remove();
+            var telephone = encodeURIComponent($('#input-telephone-auth').val());
+            var password = encodeURIComponent($('#input-password-auth').val());
+            $.ajax({
+                url: 'index.php?route=module/neoseo_auth_sms/checkPassword&telephone='+ telephone +'&password='+ password +'',
+                type:'GET',
+                success: function (json) {
+                    $('.alert').remove();
+
+                    if (!json['error']) {
+                        $('#input-email').val(json['email']);
+                        $('form').attr('action', json['action']);
+                        $('form').submit();
+                    }else{
+                        window.location.href = window.location.href;
+                    }
+                }
+            })
+        }
+    });
+</script>
+<?php } ?>
+<!-- NeoSeo Auth SMS - end -->]]>
+			</add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/account/login.tpl">
+		<operation>
+			<search><![CDATA[<form action="<?php echo $action; ?>" method="post" enctype="multipart/form-data">]]></search>
+			<add position="replace"><![CDATA[              <!-- NeoSeo Auth SMS - begin -->
+              <form action="<?php echo $action; ?>" class="login-block" method="post" enctype="multipart/form-data">
+              <?php if($neoseo_auth_sms_status != 1) { ?>
+              <!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="text" name="email" value="<?php echo $email; ?>" placeholder="<?php echo $entry_email; ?>" id="input-email" class="form-control" />]]></search>
+			<add position="after" offset="1"><![CDATA[
+			<!-- NeoSeo Auth SMS - begin -->
+			  <?php }else{ ?>
+              <div class="form-group col-phone">
+                <input type="tel" name="telephone_auth" value="" placeholder="<?php echo $entry_telephone; ?>" id="input-telephone-auth" class="form-control"/>
+              </div>
+                <span id="tel"></span>
+                <input id="input-email" type="hidden" name="email" value=""/>
+                <input type="hidden" name="type" value="1" />
+                <input type="hidden" name="auth_sms" value="1" />
+              <?php } ?>
+              <!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search><![CDATA[<label class="control-label" for="input-password"><?php echo $entry_password; ?></label>]]></search>
+			<add position="before" offset="1"><![CDATA[              <!-- NeoSeo Auth SMS - begin -->
+              <?php echo $captcha; ?>
+              <?php if($neoseo_auth_sms_status != 1) { ?>
+              <!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary" />]]></search>
+			<add position="replace"><![CDATA[              <!-- NeoSeo Auth SMS - begin -->
+               <?php } ?>
+              <?php if($neoseo_auth_sms_status == 1) { ?>
+              <input type="submit" id="send-sms-btn" value="<?php echo $text_send_sms; ?>" class="btn btn-primary btn-login"/>
+              <?php }else{ ?>
+              <input type="submit" value="<?php echo $button_login; ?>" class="btn btn-primary" />
+              <?php } ?>
+              <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[
+<!-- NeoSeo Auth SMS - begin -->
+<?php if($neoseo_auth_sms_status == 1) { ?>
+<script>
+    $(function () {
+        <?php if(isset($auth_sms_mask) && $auth_sms_mask){ ?>
+        $("#input-telephone-auth").mask("<?php echo $auth_sms_mask;?>");
+        <?php } ?>
+         $("#input-telephone-auth").on('keyup', function(){
+         console.log($(this).value)
+                        $('#tel').html($(this).value)                        })
+
+        $('body').on('click', '#send-sms-btn',sendSms);
+        $('body').on('click', '#login-by-sms-btn', checkPassword);
+
+        function sendSms(e) {
+        var name = $('input[name=name]').val();
+			var telephone = $('input[name=telephone_auth]').val();
+			var email = $('input[name=email]').val();
+			var type = $('input[name=type]').val();
+			var auth_sms = $('input[name=auth_sms]').val();
+            e.preventDefault();
+            $('.alert-danger').remove();
+            $.ajax({
+                url: 'index.php?route=module/neoseo_auth_sms/processPassword',
+                type:'POST',
+                //data: $('form').serializeArray(),
+				data: {"name": name,"telephone": telephone,"email": email,"type": type,"auth_sms": auth_sms,},
+                success: function (json) {
+                    $('.alert').remove();
+
+                    if (!json['errors']) {
+                        $('.login-block').prepend('<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i>' + json["success"] + '</div>');
+                        $('.col-phone').after('<div class="form-group col-xs-12 col-sm-4 col-psw"><input type="password" name="password" value="<?php echo $password; ?>" placeholder="Код" id="input-password-auth" class="form-control"/></div>');
+                        $('#send-sms-btn').val('<?php echo $button_login; ?>');
+                        $('#send-sms-btn').attr('id', 'login-by-sms-btn');
+                        $('#input-telephone-auth').attr('readonly','true');
+                    }else {
+                        $('.login-block').prepend('<div class="alert alert-danger"><i class="fa fa-exclamation-circle"></i>' + json["errors"] + '</div>');
+                    }
+                }
+            })
+        }
+
+        function checkPassword(e) {
+            e.preventDefault();
+            $('.alert-danger').remove();
+            var telephone = encodeURIComponent($('#input-telephone-auth').val());
+            var password = encodeURIComponent($('#input-password-auth').val());
+            $.ajax({
+                url: 'index.php?route=module/neoseo_auth_sms/checkPassword&telephone='+ telephone +'&password='+ password +'',
+                type:'GET',
+                success: function (json) {
+                    $('.alert').remove();
+
+                    if (!json['error']) {
+                        $('#input-email').val(json['email']);
+                        $('.login-block').attr('action', json['action']);
+                        $('.login-block').submit();
+                    }else{
+                        window.location.href = window.location.href;
+                    }
+                }
+            })
+        }
+    });
+</script>
+<?php } ?>
+<!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+
+	</file>
+
+
+
+	<file path="catalog/controller/account/register.php">
+		<operation>
+			<search><![CDATA[if ($this->config->get('config_account_id')) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+		$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ((utf8_strlen($this->request->post['password']) < 4) || (utf8_strlen($this->request->post['password']) > 20)) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') != 1){
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->error['confirm'] = $this->language->get('error_confirm');]]></search>
+			<add position="after" offset="1"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		}else{
+			$sms_length = $this->config->get('neoseo_auth_sms_sms_length');
+			$min = pow(10,$sms_length-1);
+			$max = pow(10,$sms_length)-1;
+			$password = rand ( $min , $max );
+
+			$this->request->post['password'] = $password;
+			$this->request->post['confirm'] = $password;
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[private function validate() {]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if (isset($this->request->post['auth_sms'])) {
+			return false;
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/register.php">
+		<operation>
+			<search><![CDATA[$data['custom_fields'] = $this->model_account_custom_field->getCustomFields();]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+		$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ((utf8_strlen($this->request->post['password']) < 4) || (utf8_strlen($this->request->post['password']) > 20)) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') != 1){
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$json['error']['confirm'] = $this->language->get('error_confirm');]]></search>
+			<add position="after" offset="1"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		}else{
+			$sms_length = $this->config->get('neoseo_auth_sms_sms_length');
+			$min = pow(10,$sms_length-1);
+			$max = pow(10,$sms_length)-1;
+			$password = rand ( $min , $max );
+
+			$this->request->post['password'] = $password;
+			$this->request->post['confirm'] = $password;
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[private function validate() {]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if (isset($this->request->post['auth_sms'])) {
+			return false;
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/account/register.tpl">
+		<operation>
+			<search><![CDATA[<legend><?php echo $text_your_password; ?></legend>]]></search>
+			<add position="before" offset="1"><![CDATA[        <!-- NeoSeo Auth SMS - begin -->
+        <?php if($neoseo_auth_sms_status != 1) { ?>
+        <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $captcha; ?>]]></search>
+			<add position="before" offset="1"><![CDATA[        <!-- NeoSeo Auth SMS - begin -->
+        <?php } ?>
+        <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$('#account .form-group[data-sort]').detach().each(function() {]]></search>
+			<add position="before" offset="2"><![CDATA[<!-- NeoSeo Auth SMS - begin -->
+ <script type="text/javascript"><!--
+<?php if(isset($auth_sms_mask) && $auth_sms_mask){ ?>
+$("#input-telephone-auth").mask("<?php echo $auth_sms_mask;?>");
+<?php } ?>
+//--></script>
+<!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/checkout/register.tpl">
+		<operation>
+			<search><![CDATA[<legend><?php echo $text_your_password; ?></legend>]]></search>
+			<add position="before" offset="1"><![CDATA[    <!-- NeoSeo Auth SMS - begin -->
+    <?php if($neoseo_auth_sms_status != 1) { ?>
+    <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="password" name="confirm" value="" placeholder="<?php echo $entry_confirm; ?>" id="input-payment-confirm" class="form-control" />]]></search>
+			<add position="after" offset="2"><![CDATA[    <!-- NeoSeo Auth SMS - begin -->
+    <?php } ?>
+    <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$('#account .form-group[data-sort]').detach().each(function() {]]></search>
+			<add position="before" offset="2"><![CDATA[<!-- NeoSeo Auth SMS - begin -->
+ <script type="text/javascript"><!--
+<?php if(isset($auth_sms_mask) && $auth_sms_mask){ ?>
+$("#input-payment-telephone").mask("<?php echo $auth_sms_mask;?>");
+<?php } ?>
+//--></script>
+<!-- NeoSeo Auth SMS - begin -->]]>
+			</add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/login.php">
+		<operation>
+			<search><![CDATA[$data['forgotten'] = $this->url->link('account/forgotten', '', 'SSL');]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+		$data['neoseo_auth_sms_login'] = $this->url->link('account/login');
+		$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/checkout/login.tpl">
+		<operation>
+			<search><![CDATA[<p><?php echo $text_i_am_returning_customer; ?></p>]]></search>
+			<add position="after"><![CDATA[    <!-- NeoSeo Auth SMS - begin -->
+    <?php if($neoseo_auth_sms_status != 1){ ?>
+    <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<input type="button" value="<?php echo $button_login; ?>" id="button-login" data-loading-text="<?php echo $text_loading; ?>" class="btn btn-primary" />]]></search>
+			<add position="after"><![CDATA[  <!-- NeoSeo Auth SMS - begin -->
+  <?php } else { ?>
+      <a class="btn btn-primary" href="<?php echo $neoseo_auth_sms_login; ?>"><?php echo $button_login; ?></a>
+  <?php } ?>
+  <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/*/template/account/account.tpl">
+		<operation>
+			<search><![CDATA[<li><a href="<?php echo $password; ?>"><?php echo $text_password; ?></a></li>]]></search>
+			<add position="replace" ><![CDATA[]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/module/account.tpl">
+		<operation>
+			<search><![CDATA[<a href="<?php echo $edit; ?>" class="list-group-item"><?php echo $text_edit; ?></a> <a href="<?php echo $password; ?>" class="list-group-item"><?php echo $text_password; ?></a>]]></search>
+			<add position="replace" ><![CDATA[  <!-- NeoSeo Auth SMS - begin -->
+  <a href="<?php echo $edit; ?>" class="list-group-item"><?php echo $text_edit; ?></a>
+  <!-- NeoSeo Auth SMS - begin -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/checkout/neoseo_checkout.php">
+		<operation>
+			<search><![CDATA[$data['logged'] = $this->customer->isLogged();]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') == 1 && $this->customer->isLogged()){
+			$data['telephone'] = $this->customer->getTelephone();
+		}else{
+			$data['telephone'] = "";
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['text_forgotten'] = $this->language->get('text_forgotten');]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		$this->language->load('module/neoseo_auth_sms');
+		$data['entry_telephone'] = $this->language->get('entry_telephone');
+		$data['text_send_sms'] = $this->language->get('text_send_sms');
+		$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+		$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+		// Captcha
+		if ($this->config->get($this->config->get('neoseo_auth_sms_captcha') . '_status'))  {
+			$data['captcha'] = $this->load->controller('captcha/' . $this->config->get('neoseo_auth_sms_captcha'), $this->error);
+		} else {
+			$data['captcha'] = '';
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (!$this->customer->login($this->request->post['email'], $this->request->post['password'])) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') == 1){
+			$telephone = $this->request->post['telephone_auth'];
+			$telephone = preg_replace('/[^0-9]/', '', urldecode($telephone));
+			if (!$this->customer->loginBySms($telephone, $this->request->post['password'])) {
+				$this->load->language('module/neoseo_auth_sms');
+				$json['error']['warning'] = $this->language->get('error_sms_login');
+			}else{
+				$this->load->model('module/neoseo_auth_sms');
+				$this->model_module_neoseo_auth_sms->deleteLoginAttempts($telephone);
+			}
+		}else{
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$json['error']['warning'] = $this->language->get('error_approved');]]></search>
+			<add position="after" offset="1">
+				/* NeoSeo Auth SMS - begin */
+				}
+				/* NeoSeo Auth SMS - end */
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/checkout/neoseo_popup_login.tpl">
+		<operation>
+			<search><![CDATA[<div class="modal-body">]]></search>
+			<add position="before"><![CDATA[            <!-- NeoSeo Auth SMS - begin -->
+            <?php if($neoseo_auth_sms_status != 1) { ?>
+            <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class="modal-footer">]]></search>
+			<add position="before"><![CDATA[            <!-- NeoSeo Auth SMS - begin -->
+            <?php }else{ ?>
+                <div class="modal-body">
+                    <form method="post" id="popuploginform">
+                        <div class="form-group required">
+                            <label class="control-label"><?php echo $entry_telephone; ?></label>
+                            <input class="form-control" id="input-telephone-auth" type="text" name="telephone_auth" value="" class="large-field"/>
+                            <input id="input-email" type="hidden" name="email" value=""/>
+                            <input type="hidden" name="type" value="1" />
+                            <input type="hidden" name="auth_sms" value="1" />
+                        </div>
+                        <?php echo $captcha; ?>
+                    </form>
+                </div>
+            <?php } ?>
+            <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a id="button-login" class="btn btn-primary"><?php echo $button_login; ?></a>]]></search>
+			<add position="before"><![CDATA[                                <!-- NeoSeo Auth SMS - begin -->
+                                <?php if($neoseo_auth_sms_status == 1) { ?>
+                                    <input type="submit" id="send-sms-btn" value="<?php echo $text_send_sms; ?>" class="btn btn-primary btn-login"/>
+                                <?php }else{ ?>
+                                <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a id="button-login" class="btn btn-primary"><?php echo $button_login; ?></a>]]></search>
+			<add position="after"><![CDATA[
+                <!-- NeoSeo Auth SMS - begin -->
+                <?php } ?>
+                <?php if($neoseo_auth_sms_status == 1) { ?>
+                <script>
+                    $(function () {
+                        <?php if(isset($auth_sms_mask) && $auth_sms_mask){ ?>
+                        $("#input-telephone-auth").mask("<?php echo $auth_sms_mask;?>");
+                        <?php } ?>
+                        $('body').on('click', '#send-sms-btn',sendSms);
+                        $('body').on('click', '#login-by-sms-btn', checkPassword);
+
+                        function sendSms(e) {
+                            e.preventDefault();
+                            $('.alert-danger').remove();
+                            $.ajax({
+                                url: 'index.php?route=module/neoseo_auth_sms/processPassword',
+                                type:'POST',
+                                data: $('#popuploginform').serializeArray(),
+                                success: function (json) {
+                                    $('.alert').remove();
+
+                                    if (!json['errors']) {
+                                        $('#popup-login .modal-body').prepend('<div class="alert alert-success"><i class="fa fa-exclamation-circle"></i>' + json["success"] + '</div>');
+                                        $('.pass-wrap').remove();
+                                        $('#popup-login .modal-body').append('<div class="form-group required pass-wrap"><div class="form-group required"><label class="control-label"><?php echo $entry_password; ?></label><input class="form-control" type="password" name="password" value="" id="input-password-auth" class="large-field"/></div></div>');
+                                        $('#send-sms-btn').val('<?php echo $button_login; ?>');
+                                        $('#send-sms-btn').attr('id', 'login-by-sms-btn');
+                                        $('#input-telephone-auth').attr('readonly','true');
+                                    }else {
+                                        $('#popup-login .modal-body').prepend('<div class="alert alert-danger">' + json['errors'] + '</div>');
+                                    }
+                                }
+                            })
+                        }
+
+                        function checkPassword(e) {
+                            e.preventDefault();
+                            $('.alert-danger').remove();
+                            var telephone = encodeURIComponent($('#input-telephone-auth').val());
+                            var password = encodeURIComponent($('#input-password-auth').val());
+                            $.ajax({
+                                url: 'index.php?route=module/neoseo_auth_sms/checkPassword&telephone='+ telephone +'&password='+ password +'',
+                                type:'GET',
+                                success: function (json) {
+                                    $('.alert').remove();
+
+                                    if (!json['error']) {
+                                        if (json['register_new_user']) {
+                                            $('form').attr('action', json['action']);
+                                            $('form').submit();
+                                        }else{
+                                            onLogin();
+                                        }
+
+                                    }else{
+                                        $('#popup-login .modal-body').prepend('<div class="alert alert-danger">' + json['error'] + '</div>');
+                                        $('.pass-wrap').remove();
+                                        $('#login-by-sms-btn').val('<?php echo $text_send_sms; ?>');
+                                        $('#login-by-sms-btn').attr('id', 'send-sms-btn');
+                                    }
+                                }
+                            })
+                        }
+                    });
+                </script>
+                <?php } ?>
+                <!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/neoseo_edit.php">
+		<operation>
+			<search><![CDATA[if (($this->request->server['REQUEST_METHOD'] == 'POST') && $this->validate()) {]]></search>
+			<add position="after"><![CDATA[
+			/* NeoSeo Auth SMS - begin */
+			if (isset($this->request->post['telephone_auth']) && !empty($this->request->post['telephone_auth'])) {
+				$telephone = $this->request->post['telephone_auth'];
+				$telephone = preg_replace('/[^0-9]/', '', urldecode($telephone));
+				$this->request->post['telephone_auth'] = $telephone;
+			}
+			/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/neoseo_register.php">
+		<operation>
+			<search><![CDATA[if (in_array($fieldName, array("email", "password", "password2"))) {]]></search>
+			<add position="replace"><![CDATA[
+					/* NeoSeo Auth SMS - begin */
+					if (("password" == $fieldName || "password2" == $fieldName) && $this->config->get('neoseo_auth_sms_status')) {
+						continue;
+					}
+					if (in_array($fieldName, array("email", "password", "password2")) && ($this->config->get('neoseo_auth_sms_status') != 1)) {
+					/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[protected function validate()]]></search>
+			<add position="after" offset="1"><![CDATA[
+			/* NeoSeo Auth SMS - begin */
+			if (isset($this->request->post['auth_sms'])) {
+				return false;
+			}
+			/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ($field['display'] && ( $field['required'] || $fieldName == "email" || $fieldName == "password" || $fieldName == "password2" )) {]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Auth SMS - begin */
+			if ($field['display'] && ( $field['required'] )) {
+			/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (trim($this->request->post['email']) != "" && $this->model_account_customer->getTotalCustomersByEmail($this->request->post['email'])) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') != 1){
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search index="1"><![CDATA[if ($this->config->get('config_account_id')) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/neoseo_edit.php">
+		<operation>
+			<search><![CDATA[if (in_array($fieldName, array("email"))) {]]></search>
+			<add position="replace"><![CDATA[
+				/* NeoSeo Auth SMS - begin */
+				if (in_array($fieldName, array("email")) && ($this->config->get('neoseo_auth_sms_status') != 1)) {
+				/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ($field['display'] && ( $field['required'] || $fieldName == "email" || $fieldName == "password" || $fieldName == "password2" )) {]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Auth SMS - begin */
+			if ($field['display'] && ( $field['required'] )) {
+			/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (trim($this->request->post['email']) != $this->customer->getEmail() && $this->model_account_customer->getTotalCustomersByEmail($this->request->post['email'])) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		if ($this->config->get('neoseo_auth_sms_status') != 1){
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (!$this->error) {]]></search>
+			<add position="before"><![CDATA[
+		/* NeoSeo Auth SMS - begin */
+		}
+		/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/account/neoseo_account.php">
+		<operation>
+			<search><![CDATA[$data['column_left'] = $this->load->controller('common/column_left');]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Auth SMS - begin */
+			$data['neoseo_auth_sms_status'] = $this->config->get('neoseo_auth_sms_status');
+			$data['auth_sms_mask'] = $this->config->get('neoseo_auth_sms_mask');
+			/* NeoSeo Auth SMS - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/account/neoseo_account.tpl">
+		<operation>
+			<search><![CDATA[<li><span class="ac-option"><?php echo $text_password; ?></span> <span class="as-value"> **** </span></li>]]></search>
+			<add position="before" offset="2"><![CDATA[
+			<!-- NeoSeo Auth SMS - begin -->
+			<?php if($neoseo_auth_sms_status != 1) { ?>
+			<!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<a href="<?php echo $password; ?>" class="btn"><i class="fa fa-pencil" aria-hidden="true"></i> <?php echo $text_edit; ?></a>]]></search>
+			<add position="after" offset="1"><![CDATA[
+			<!-- NeoSeo Auth SMS - begin -->
+			<?php } ?>
+			<!-- NeoSeo Auth SMS - end -->]]></add>
+		</operation>
+	</file>
+</modification>

@@ -1,0 +1,57 @@
+/* Actions Page */
+.action-list {margin: 30px 0;}
+.action-list .item {margin: 20px 0; padding-bottom: 10px; }
+.action-list .item-title {margin-top:8px;}
+.action-list .item-pic { float: left; margin-right: 30px; margin-bottom: 15px; max-width: 400px; position: relative; z-index:6}
+.action-list .timer-title {font-size:13px; opacity: 0.8; margin: 8px 0;}
+.action-list .timer-time  { width:235px; text-align: left; position: relative; left:-3px; margin-bottom: 20px;}
+.action-item {margin:25px 0 20px;}
+.action-item .item-pic {float: left;  margin-right: 30px; margin-bottom: 15px; max-width: 450px; }
+.action-item .timer-title{font-size:15px; opacity: 0.8; margin-bottom:15px; margin-top: 15px;}
+.action-item .timer-time {width:390px;text-align: left; position: relative; left:-8px; margin-bottom: 30px; margin-top: 20px;}
+@media (max-width: 991px) {
+	.action-item .item-pic { float:none; margin-right:0;}
+	.action-item .timer-title {font-size:17px;}
+	.action-item .timer-time {width:350px; margin-bottom:20px;}
+}
+.item-pic img {max-width:100%}
+.action-item .item-type , .action-list .item-type {
+	display: inline-block;
+	padding: 5px 10px;
+	background:#4484f4;
+	color: white;
+	border-radius: 5px;
+}
+.action-content .short-container { padding-left: 0; padding-right: 0}
+@media (max-width: 767px) {
+	.action-list .item-pic { float:none; margin-right:0}
+}
+/* Actions Page END */
+/* Actions List */
+#actions { margin: 10px 0 0;}
+#actions .container {width:100%;}
+#actions .action-box {margin-bottom:20px; text-align: center; }
+#actions h3 { margin-top:0; margin-bottom: 20px;}
+#actions .timer-title { font-size: 16px; margin-bottom: 10px;}
+#actions .timer-time { text-align: left; max-width: 400px; margin: 10px auto;}
+#actions .item-pic {margin: 7px 0; max-height: 250px;}
+#actions .item-pic img {max-height:500px; max-width: 100%}
+#actions .action-box[class^='col-']{width:50%!important;}
+@media (min-width: 992px) and (max-width: 1199px) {
+	#actions h3 {font-size: 22px;}
+}
+@media (min-width: 768px) and (max-width: 991px) {
+	#actions h3 {font-size: 18px; margin-bottom:2px;height:38px;}
+}
+@media (max-width: 767px) {
+	#actions { margin: 10px 0;}
+	#actions h3 { font-size:23px;}
+	#actions .action-box {padding: 0 0 20px; margin: 0 15px 20px; border-bottom: solid 1px #e4e7e8; }
+	#actions .action-box:last-child { border-bottom: none; margin-bottom: 0}
+	#actions .action-box[class^='col-']{width:100%!important;display:block; margin-right:0; margin-left:0}
+	#actions .action-box[class^='col-']:last-child{border-bottom: solid 1px #e4e7e8;}
+}
+@media (max-width: 480px) {
+	#actions h3 { font-size:21px;}
+}
+/* Actions List END */

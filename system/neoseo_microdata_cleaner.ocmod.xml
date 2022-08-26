@@ -1,0 +1,778 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>NeoSeo MicroData Cleaner</name>
+	<code>neoseo_microdata</code>
+	<version>1.0</version>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+	<file path="catalog/view/theme/default/template/blog/neoseo_blog_article.tpl">
+		<operation>
+			<search>
+				<![CDATA[								<div itemscope="" class="product-thumb clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[								<div  class="product-thumb clearfix">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[						<div itemscope="" class="row article-block ab-info">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[						<div  class="row article-block ab-info">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/blog/neoseo_blog_comment.tpl">
+		<operation>
+			<search>
+				<![CDATA[		<div id="<?php echo $comment['comment_id']; ?>" class="comment"   itemtype="http://schema.org/UserComments">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[		<div id="<?php echo $comment['comment_id']; ?>" class="comment"   >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[					<div itemscope="" class="comment-meta">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					<div  class="comment-meta">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[					<div itemscope="" class="comment-rating">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					<div  class="comment-rating">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[				<div itemscope="" class="comment-middle">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[				<div  class="comment-middle">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[						<div itemscope="" id="<?php echo $comment_reply['comment_id']; ?>" class="comment">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[						<div  id="<?php echo $comment_reply['comment_id']; ?>" class="comment">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[									<div itemscope="" class="comment-meta">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[									<div  class="comment-meta">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[								<div itemscope="" class="comment-right">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[								<div  class="comment-right">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/blog/neoseo_blog_comment_form.tpl">
+		<operation>
+			<search>
+				<![CDATA[			<div itemscope="" id="comments"><?php echo $reviews; ?></div>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[			<div  id="comments"><?php echo $reviews; ?></div>
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/module/neoseo_action_manager_info.tpl">
+		<operation>
+			<search>
+				<![CDATA[            <div class="product-layout product-grid col-xs-12 col-sm-4 col-md-3" itemscope itemtype="http://schema.org/Product" itemprop="itemListElement">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[            <div class="product-layout product-grid col-xs-12 col-sm-4 col-md-3"   >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                        <a href="<?php echo $product['href']; ?>" itemprop="url">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                        <a href="<?php echo $product['href']; ?>" >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <img class="hoverable" src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" itemprop="image" over="<?php echo $product['thumb1']; ?>" out="<?php echo $product['thumb']; ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <img class="hoverable" src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive"  over="<?php echo $product['thumb1']; ?>" out="<?php echo $product['thumb']; ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" itemprop="image"/>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <h4 itemprop="name"><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <h4 ><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <div class="rating"   <?php if($product['rating']){ ?> itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating"<?php }?> >
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <div class="rating"   <?php if($product['rating']){ ?>   <?php }?> >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="reviewCount" content="<?php echo $product['md_review_count']; ?>">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo $product['md_review_count']; ?>">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="ratingValue" content="<?php echo $product['rating']; ?>">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo $product['rating']; ?>">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                        <p class="price" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                        <p class="price"   >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="price" content="<?php echo rtrim(preg_replace("/[^0-9\.]/", "", ($product['special'] ? $product['special'] : $product['price'])), '.'); ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo rtrim(preg_replace("/[^0-9\.]/", "", ($product['special'] ? $product['special'] : $product['price'])), '.'); ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="priceCurrency" content="<?php echo $md_currency ?>"/>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo $md_currency ?>"/>
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <link itemprop="availability" href="http://schema.org/<?php echo ($product['md_availability'] ? " InStock" : "OutOfStock") ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <link  href="http://schema.org/<?php echo ($product['md_availability'] ? " InStock" : "OutOfStock") ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                    <div class="description" itemprop="description"><?php echo $product['description']; ?></div>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                    <div class="description" ><?php echo $product['description']; ?></div>
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/default/template/module/neoseo_blog_article_full.tpl">
+		<operation>
+			<search>
+				<![CDATA[		<div itemscope="" class="article-layout col-lg-3 col-md-3 col-sm-6 col-xs-12">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[		<div  class="article-layout col-lg-3 col-md-3 col-sm-6 col-xs-12">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/account/neoseo_watched.tpl">
+		<operation>
+			<search>
+				<![CDATA[               <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[               <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/account/neoseo_wishlist.tpl">
+		<operation>
+			<search>
+				<![CDATA[               <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[               <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/blog/neoseo_blog_article.tpl">
+		<operation>
+			<search>
+				<![CDATA[								<div itemscope="" class="product-thumb clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[								<div  class="product-thumb clearfix">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[						<div itemscope="" class="row article-block ab-info">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[						<div  class="row article-block ab-info">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/blog/neoseo_blog_comment.tpl">
+		<operation>
+			<search>
+				<![CDATA[		<div id="<?php echo $comment['comment_id']; ?>" class="comment"   itemtype="http://schema.org/UserComments">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[		<div id="<?php echo $comment['comment_id']; ?>" class="comment"   >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[					<div itemscope="" class="comment-meta">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					<div  class="comment-meta">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[					<div itemscope="" class="comment-rating">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					<div  class="comment-rating">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[				<div itemscope="" class="comment-middle">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[				<div  class="comment-middle">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[						<div itemscope="" id="<?php echo $comment_reply['comment_id']; ?>" class="comment">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[						<div  id="<?php echo $comment_reply['comment_id']; ?>" class="comment">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[									<div itemscope="" class="comment-meta">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[									<div  class="comment-meta">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[								<div itemscope="" class="comment-right">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[								<div  class="comment-right">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/blog/neoseo_blog_comment_form.tpl">
+		<operation>
+			<search>
+				<![CDATA[			<div itemscope="" id="comments"><?php echo $reviews; ?></div>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[			<div  id="comments"><?php echo $reviews; ?></div>
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_action_manager_info.tpl">
+		<operation>
+			<search>
+				<![CDATA[                                <img src="<?php echo $product['thumb']; ?>" width="200" height="200" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="hoverable img-responsive" itemprop="image" data-over="<?php echo $product['thumb1']; ?>" data-out="<?php echo $product['thumb']; ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                <img src="<?php echo $product['thumb']; ?>" width="200" height="200" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="hoverable img-responsive"  data-over="<?php echo $product['thumb1']; ?>" data-out="<?php echo $product['thumb']; ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                <img src="<?php echo $product['thumb']; ?>" width="200" height="200" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" itemprop="image" class="img-responsive" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                <img src="<?php echo $product['thumb']; ?>" width="200" height="200" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>"  class="img-responsive" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                        <meta itemprop="url" content="<?php echo $product['href']; ?>" >
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                        <meta  content="<?php echo $product['href']; ?>" >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                <h4 itemprop="name"><a href="<?php echo $product['href']; ?>" title="<?php echo $product['name']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                <h4 ><a href="<?php echo $product['href']; ?>" title="<?php echo $product['name']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <span class="rating"  <?php if($product['rating']){ ?> itemprop="aggregateRating" itemscope itemtype="http://schema.org/AggregateRating"<?php }?> >
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <span class="rating"  <?php if($product['rating']){ ?>   <?php }?> >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="reviewCount" content="<?php echo $product['md_review_count']; ?>">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo $product['md_review_count']; ?>">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <meta itemprop="ratingValue" content="<?php echo $product['rating']; ?>">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <meta  content="<?php echo $product['rating']; ?>">
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                            <h4 itemprop="name"><a href="<?php echo $product['href']; ?>" title="<?php echo $product['name']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                            <h4 ><a href="<?php echo $product['href']; ?>" title="<?php echo $product['name']; ?>"><?php echo $product['name']; ?></a></h4>
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                <p class="price" itemprop="offers" itemscope itemtype="http://schema.org/Offer">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                <p class="price"   >
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                    <meta itemprop="price" content="<?php echo rtrim(preg_replace("/[^0-9\.]/", "", ($product['special'] ? $product['special'] : $product['price'])), '.'); ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                    <meta  content="<?php echo rtrim(preg_replace("/[^0-9\.]/", "", ($product['special'] ? $product['special'] : $product['price'])), '.'); ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                    <meta itemprop="priceCurrency" content="<?php echo $md_currency ?>"/>
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                    <meta  content="<?php echo $md_currency ?>"/>
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                                    <link itemprop="availability" href="http://schema.org/<?php echo ($product['md_availability'] ?'InStock' : 'OutOfStock') ?>" />
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                                    <link  href="http://schema.org/<?php echo ($product['md_availability'] ?'InStock' : 'OutOfStock') ?>" />
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[                    <div class="description" itemprop="description">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                    <div class="description" >
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_bestseller_carousel.tpl">
+		<operation>
+			<search>
+				<![CDATA[                  <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                  <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_bestseller_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_blog_article_full.tpl">
+		<operation>
+			<search>
+				<![CDATA[		<div itemscope="" class="article-layout <?php if ($limit < 5 ) { ?> col-lg-3 col-md-3 col-sm-6 col-xs-12 <?php } ?>">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[		<div  class="article-layout <?php if ($limit < 5 ) { ?> col-lg-3 col-md-3 col-sm-6 col-xs-12 <?php } ?>">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_featured_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_featured_products_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[               <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[               <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_featured_products_slider.tpl">
+		<operation>
+			<search>
+				<![CDATA[                     <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                     <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_last_viewed_products_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_last_viewed_products_slider.tpl">
+		<operation>
+			<search>
+				<![CDATA[                  <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                  <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_latest_carousel.tpl">
+		<operation>
+			<search>
+				<![CDATA[                  <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                  <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_latest_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_similar_products_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_similar_products_slider.tpl">
+		<operation>
+			<search>
+				<![CDATA[                  <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                  <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_special_carousel.tpl">
+		<operation>
+			<search>
+				<![CDATA[                  <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                  <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/module/neoseo_special_default.tpl">
+		<operation>
+			<search>
+				<![CDATA[         <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[         <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/product/category.tpl">
+		<operation>
+			<search>
+				<![CDATA[                        <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                        <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/product/manufacturer_info.tpl">
+		<operation>
+			<search>
+				<![CDATA[                        <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                        <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/product/neoseo_product_options_pro_product.tpl">
+		<operation>
+			<search>
+				<![CDATA[					$('[itemprop="articul"] > span').text(product_options_pro[key]['article']);
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					$('[] > span').text(product_options_pro[key]['article']);
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[					$('[itemprop="model"] > span').text(product_options_pro[key]['model']);
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[					$('[] > span').text(product_options_pro[key]['model']);
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[				$('[itemprop="model"] > span').text('<?php echo $model; ?>');
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[				$('[] > span').text('<?php echo $model; ?>');
+]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[				$('[itemprop="model"] > span').text('<?php echo $model; ?>');
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[				$('[] > span').text('<?php echo $model; ?>');
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/product/search.tpl">
+		<operation>
+			<search>
+				<![CDATA[                    <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                    <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/neoseo_unistor/template/product/special.tpl">
+		<operation>
+			<search>
+				<![CDATA[                    <div itemscope="" class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</search>
+			<add position="replace">
+				<![CDATA[                    <div  class="product-thumb box-shadow box-corner clearfix">
+]]>
+			</add>
+		</operation>
+	</file>
+</modification>

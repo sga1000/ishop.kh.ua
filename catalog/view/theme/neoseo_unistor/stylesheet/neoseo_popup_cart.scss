@@ -1,0 +1,124 @@
+#popup-cart {
+
+  .modal {
+    h4 {
+      font-family: $f-roboto;
+      margin-bottom: 10px;
+    }
+
+    &-footer {
+      flex-wrap: wrap;
+      .cart-quick-button {
+        @media (max-width: 480px) {
+          .form-group {
+            width: auto;
+          }
+        }
+      }
+      .cart-quick-button {
+        #button-quick-order-cart {
+          height: 33px;
+        }
+      }
+      .popup-quick-button {
+        padding: 0 15px;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        color: #333;
+        border: none;
+        text-decoration: none;
+        margin: 0 10px 0 0;
+        min-height: 40px;
+        @media (max-width: 576px) {
+          margin: 0 0 10px 0;
+        }
+        i {
+          display: none;
+        }
+      }
+
+    }
+  }
+
+}
+
+#popup-quick_order {
+  #check-agree {
+    #agree-error {
+      position: absolute;
+      bottom: -30px;
+      left: 0;
+      color: #a94442;
+    }
+  }
+}
+
+#button-quick-order-cart, #button-quick-order-dropdowm-cart {
+  height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  background: #dedede;
+  color: #777777;
+  text-decoration: none;
+  border: none;
+  font-weight: 400;
+  font-size: 14px;
+  text-shadow: none;
+  border-radius: 0 4px 4px 0;
+  i {
+    position: relative;
+    top: -1px;
+    margin-right: 6px;
+  }
+  &:hover {
+    background: $button-color-hover;
+    color: $button-color-text-hover;
+  }
+}
+
+#popup-cart-quick-order-form, #dropdowm-cart-quick-order-form {
+  .help-block-cart {
+    text-align: left;
+    color: #a94442;
+    font-weight: 400;
+    margin-top: 5px;
+  }
+}
+
+#popup-cart-quick-order-form {
+  @media (max-width: 575px) {
+     .form-group {
+      & > .input-group {
+        display: flex;
+        flex-direction: column;
+        .input-group-btn {
+          display: flex;
+          width: 100%;
+          .btn {
+            border-radius: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.cart__products-list #button-quick-order-cart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  text-shadow: none;
+  height: 42px;
+  color: rgb(78, 78, 78);
+  font-weight: bold;
+  padding: 0 15px;
+  background: rgb(222, 222, 222);
+  text-decoration: none;
+  border-radius: 4px;
+}

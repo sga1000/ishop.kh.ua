@@ -1,0 +1,146 @@
+@import "neoseo_unistor_carousel-core.scss";
+
+.carousel-container {
+  margin:  0 -10px 25px;
+  padding: 20px 25px 30px;
+  text-transform: uppercase;
+  text-align: center;
+  background: $module-background-color;
+  h3 {
+    font-weight: bold;
+    font-size: 24px;
+  }
+  .owl-carousel {
+    border: none;
+    padding: 0 25px;
+    .owl-item {
+      img {
+        width: auto;
+        max-width: 100%;
+      }
+    }
+    .owl-controls {
+      position: absolute;
+      top: 0;
+      display: flex;
+      width: 100%;
+      height: 1px;
+      left: 0;
+      bottom: 0;
+      margin: auto;
+
+      .owl-nav {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        width: 100%;
+      }
+
+      .owl-prev {
+        position: relative;
+        left: -15px;
+      }
+
+      .own-next {
+        position: relative;
+        right: -15px;
+      }
+
+      .owl-prev, .owl-next {
+        opacity: 1;
+        color: #363636;
+        font-size: 27px !important;
+        margin: 0 !important;
+        font-weight: 200;
+        text-shadow: none;
+        border-radius: 50%;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+          background: $button-color;
+          color: $button-color-text;
+        }
+      }
+
+      .owl-prev > i {
+        position: relative;
+        left: -2px;
+      }
+
+      .owl-next > i {
+        position: relative;
+        right: -2px;
+      }
+
+      .owl-prev, .owl-next {
+        background: #e8e8e8;
+      }
+      .owl-pagination {
+        display: none;
+      }
+
+
+
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .carousel-container {
+    h3 {
+      font-weight: bold;
+      font-size: 21px;
+    }
+  }
+}
+
+// --- carousel --- //
+
+.module-carousel {
+  [id^="carousel"], [id*="carousel"] {
+    display: block;
+    overflow: hidden;
+    .carousel-wrapper {
+      width: 100000px;
+      display: inline-block;
+      .carousel-item {
+        float: left;
+      }
+    }
+
+  }
+  .carousel-nav {
+    display: flex;
+    margin-top: -50px;
+    justify-content: flex-end;
+    padding: 0 5px 20px;
+    .prev, .next {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      color: $module-title-color;
+      font-size: 21px;
+      border: 1px solid $button-color;
+      &:hover {
+        background: $button-color;
+        color: $button-color-text;
+      }
+    }
+    .prev {
+      padding-right: 4px;
+      margin-right: 5px;
+    }
+    .next {
+      padding-left: 4px;
+    }
+  }
+}

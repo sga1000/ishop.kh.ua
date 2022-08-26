@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Filter Page Generator</name>
+	<version>1.0</version>
+	<code>neoseo-filter-page-generator</code>
+	<author>NeoSeo</author>
+	<link>http://neoseo.com.ua/neoseo-filter-page-generator</link>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['text_product'] = $this->language->get('text_product');]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Filter Page Generator - begin */
+		$data['filter_page_generator_status'] = $this->config->get('neoseo_filter_page_generator_status');	
+		if($data['filter_page_generator_status'] == 1 && $this->user->hasPermission('access','catalog/neoseo_filter_page_generator') && isset($this->session->data['token']) ) {
+			$this->language->load("catalog/neoseo_filter_page_generator_menu");
+			$data['text_filter_page_generator_menu'] = $this->language->get("text_filter_page_generator_menu");
+			$data['link_filter_page_generator_menu'] = $this->url->link('catalog/neoseo_filter_page_generator', 'token=' . $this->session->data['token'], 'SSL');
+		}
+		/* NeoSeo Filter Page Generator - end */
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<a href="<?php echo $product; ?>]]></search>
+			<add position="after"><![CDATA[			<!-- NeoSeo Filter - begin -->
+			<?php if($filter_page_generator_status) { ?>
+			<li><a href="<?php echo $link_filter_page_generator_menu; ?>"><?php echo $text_filter_page_generator_menu; ?></a></li>
+			<?php } ?>
+			<!-- NeoSeo Filter - begin -->]]></add>
+		</operation>
+	</file>
+
+</modification>

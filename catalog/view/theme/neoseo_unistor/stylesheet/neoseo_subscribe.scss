@@ -1,0 +1,120 @@
+.product-grid .product-thumb .button-group button.quickorder {
+  display: none;
+}
+
+.product-list .product-thumb .button-group button.quickorder {
+  width: 30%;
+}
+
+.product-list .button-group button {
+  width: 30%;
+}
+
+.modal--subs {
+
+  .modal-body {
+    img {
+      width: auto;
+    }
+  }
+  .modal-footer {
+    justify-content: center;
+  }
+}
+
+/*-----subscribe-----*/
+.subscribe {
+  background-color: $module-background-color;
+  background-image: url('../image/subscribe/subscribe-bg.jpg');
+  @media (max-width: 767px) {
+    background-image: url('../image/subscribe/subscribe-bg-480.jpg');
+  }
+  background-size: cover;
+  padding: 40px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  position: relative;
+  overflow: hidden;
+  margin: 0 5px 20px;
+
+
+  .subscribe-container {
+    text-align: left;
+    @media (min-width: 768px) {
+      margin-left: auto;
+      width: 50%;
+    }
+    @media (max-width: 991px) and (min-width: 768px) {
+      width: 75%;
+    }
+    @media (max-width: 767px) {
+      width: 100%;
+    }
+
+    .subscribe-title {
+      margin-bottom: 2px;
+      font-size: 18px;
+      text-transform: uppercase;
+      font-weight: bold;
+    }
+
+    .subscribe-paragraph {
+      text-transform: lowercase;
+      margin-bottom: 18px;
+    }
+
+    .subscribe-group {
+      display: flex;
+      position: relative;
+      &:after {
+        font-family: 'fontawesome';
+        content: '\f1d8';
+        font-size: 21px;
+        color: #d3d3d3;
+        display: block;
+        position: absolute;
+        left: 12px;
+        top: 8px;
+      }
+    }
+
+    input[type=submit] {
+      transition: 0.3s ease-in-out;
+      background: $button-color;
+      color: $button-color-text;
+      border-radius: 0;
+      font-size: 23px;
+      height: 42px;
+      box-shadow: none;
+      border: none;
+      padding: 4px 15px 6px;
+      margin-left: 15px;
+      &:hover {
+        transition: 0.3s ease-in-out;
+        background: $button-color-hover;
+      }
+    }
+
+    input[type=text] {
+      transition: 0.3s ease-in-out;
+      border-radius: 0;
+      font-size: 14px;
+      height: 42px;
+      box-shadow: none;
+      border: 1px solid #ececec;
+      padding-left: 50px;
+      &:focus {
+        transition: 0.3s ease-in-out;
+        border-radius: 0;
+        box-shadow: none;
+        border: 1px solid $button-color;
+        outline: none;
+      }
+    }
+
+  }
+
+
+
+}

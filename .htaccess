@@ -1,0 +1,47 @@
+Options +SymLinksIfOwnerMatch
+
+# Чтоб врагам не досталось содержимое каталогов
+Options -Indexes
+
+# Запрет на чтение секретных файлов
+<FilesMatch "(?i)((\.tpl|\.ini|\.log|(?<!robots)\.txt))">
+ Order deny,allow
+ Deny from all
+</FilesMatch>
+
+# Шаманство с урлами
+RewriteEngine On
+
+RewriteCond %{HTTP_ACCEPT} image/webp
+RewriteCond %{DOCUMENT_ROOT}/$1.webp -f
+RewriteRule (.+)\.(jpe?g|png)$ $1.webp [T=image/webp,E=accept:1]
+<IfModule mod_headers.c>
+Header append Vary Accept env=REDIRECT_accept
+</IfModule>
+AddType image/webp .webp
+
+# Редирект c www на без www
+RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]
+RewriteRule ^(.*)$ https://%1/$1 [L,R=301]
+
+# Редирект для главной (с /index.php на /)
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\ HTTP/
+RewriteRule ^index\.html$ / [R=301,L]
+RewriteCond %{THE_REQUEST} ^[A-Z]{3,9}\ /index\.php\ HTTP/
+RewriteRule ^index\.php$ / [R=301,L]
+
+# Редирекс с //////////// на /
+RewriteCond %{REQUEST_URI} ^(.*?)\/{2,}(.*?)$
+RewriteRule (.*) %1/%2 [R=301,L,QSA]
+
+RewriteBase /
+RewriteRule ^sitemap.xml$ index.php?route=feed/neoseo_fast_sitemap [L]
+RewriteRule ^sitemap([^\.]+).xml$ index.php?route=feed/neoseo_fast_sitemap&path=$1 [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !.*\.(ico|gif|jpg|jpeg|png|js|css)
+RewriteRule ^([^?]*) index.php?_route_=$1 [L,QSA]
+
+#php_value max_input_vars 10000
+#php_value suhosin.post.max_vars 10000
+#php_value suhosin.request.max_vars 10000

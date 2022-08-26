@@ -1,0 +1,784 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Product Options</name>
+	<version>22</version>
+	<code>neoseo-product-options-pro</code>
+	<author>NeoSeo</author>
+	<link>http://neoseo.com.ua/neoseo-product-options-pro</link>
+
+	<file path="admin/controller/catalog/product.php">
+		<operation>
+			<search><![CDATA[$data['customer_groups'] = $this->model_customer_customer_group->getCustomerGroups()]]></search>
+			<add position="replace"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		foreach ($this->model_customer_customer_group->getCustomerGroups() as $customer_group) {
+			$data['customer_groups'][$customer_group['customer_group_id']] = array(
+				'customer_group_id' => $customer_group['customer_group_id'],
+				'approval' => $customer_group['approval'],
+				'sort_order' => $customer_group['sort_order'],
+				'language_id' => $customer_group['language_id'],
+				'name' => $customer_group['name'],
+				'description' => $customer_group['description']
+			);
+		}
+		$data['template_options_pro_image'] = $this->load->view('catalog/neoseo_product_options_pro_image.tpl', $data);
+		$data['template_options_pro'] = $this->load->view('catalog/neoseo_product_options_pro.tpl', $data);
+		/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['tab_option'] = $this->language->get('tab_option');]]></search>
+			<add position="after"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		$this->language->load('catalog/neoseo_product_options_pro_product');
+		$data['entry_option_articul'] = $this->language->get('entry_option_articul');
+		$data['entry_option_model'] = $this->language->get('entry_option_model');
+		$data['tab_neoseo_option'] = $this->language->get('tab_neoseo_option');
+		$data['tab_image_option'] = $this->language->get('tab_image_option');
+		$data['text_selected_displayed'] = $this->language->get('text_selected_displayed');
+		$data['text_option_priority'] = $this->language->get('text_option_priority');
+		$data['text_use_options_pro'] = $this->language->get('text_use_options_pro');
+		$data['text_option'] = $this->language->get('text_option');
+		$data['text_priority'] = $this->language->get('text_priority');
+		$data['text_option_value'] = $this->language->get('text_option_value');
+		$data['text_image'] = $this->language->get('text_image');
+		
+		$this->language->load('catalog/neoseo_product_options_pro');
+		
+		$data['entry_base_price'] = $this->language->get('entry_base_price');
+		
+		if($this->config->get('neoseo_product_options_pro_product_base_price') == 1){
+			$data['base_price_status'] = true;
+		}else{
+			$data['base_price_status'] = false;
+		}
+		
+		/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['product_options'] = array();]]></search>
+			<add position="before"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		if($this->config->get('neoseo_product_options_pro_status') == 1) {
+			$this->load->model('tool/neoseo_product_options_pro');
+			$options_pro = array();
+
+			$options = $this->model_catalog_option->getOptions($filter_data);
+			$options_pro_list = $this->model_tool_neoseo_product_options_pro->getOptions();
+
+			if($options_pro_list) {
+				foreach ($options_pro_list as $product_option_pro) {
+					$regular_options = $this->model_tool_neoseo_product_options_pro->getOptionsKit($product_option_pro['product_option_pro_id']);
+					$options_pro[$product_option_pro['product_option_pro_id']]['name'] = $product_option_pro['name'];
+					$options_pro[$product_option_pro['product_option_pro_id']]['options'] = $regular_options;
+				}
+			}
+
+			$data['options'] = array();
+			$data['related_options'] = array();
+
+			foreach ($options as $option) {
+				foreach ($options_pro as $product_option_pro_id => $product_option_pro) {
+					if (in_array($option['option_id'], $product_option_pro['options'])) {
+						$data['related_options'][$product_option_pro_id][] = array(
+												'option_id' => $option['option_id'],
+												'name'      => $option['name']
+												);
+					}
+					$option['option_values'] = array();
+					$option_values = $this->model_catalog_option->getOptionValues($option['option_id']);
+					if($option_values){
+						foreach ($option_values as $option_value) {
+							$option['option_values'][$option_value['option_value_id']] = $option_value;
+						}
+					}
+				}
+				$data['options'][$option['option_id']] = $option;
+			}
+
+			$get_options_images = $this->model_tool_neoseo_product_options_pro->getProductOptionsImages($this->request->get['product_id']);
+
+			$data['option_images'] = $get_options_images;
+
+			$data['product_options_pro'] = array();
+			$data['product_options_images'] = array();
+
+			$option_pro_data = $this->model_tool_neoseo_product_options_pro->getProductOptions($this->request->get['product_id']);
+
+			if($option_pro_data) {
+				$data['product_options_pro'] = $option_pro_data;
+			}
+
+			if(isset($option_pro_data['product_option_pro_id']) && isset($options_pro[$option_pro_data['product_option_pro_id']])) {
+				$option_pro_image_data['options'] = array();
+				$option_pro_image_data['name'] = $options_pro[$option_pro_data['product_option_pro_id']]['name'];
+				$option_pro_image_data['product_option_pro_id'] = $option_pro_data['product_option_pro_id'];
+				foreach ($option_pro_data['option_rows'] as $option_row_key => $option_row_data) {
+					$names = array();
+					foreach ($option_row_data['options'] as $option_id_key => $option_value_id) {
+						$names[] = $data['options'][$option_id_key]['option_values'][$option_value_id]['name'];
+					}
+					$option_row_data['name'] = implode(' + ', $names);
+					$option_pro_image_data['options'][$option_row_key] = $option_row_data;
+				}
+				$data['product_options_images'] = $option_pro_image_data;
+			}
+
+			$data['options_pro'] = $options_pro;
+			$data['product_options_status'] = true;
+		} else {
+			$data['product_options_status'] = false;
+		}
+		/* Neoseo Product Options PRO - end */
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['zone']]]></search>
+			<add position="after"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		$this->language->load('common/neoseo_product_options_pro');
+		$data['text_neoseo_option'] = $this->language->get('text_neoseo_option');
+		$data['neoseo_option'] = $this->url->link('catalog/neoseo_product_options_pro', 'token=' . $this->session->data['token'], 'SSL');
+		$data['text_neoseo_option'] = $this->language->get('text_neoseo_option');
+		if($this->config->get('neoseo_product_options_pro_status') == 1) {
+			$data['product_options_status'] = true;
+		} else {
+			$data['product_options_status'] = false;
+		}
+		/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/catalog/option.php">
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['sort_order'])) {]]></search>
+			<add position="before"><![CDATA[				/*  Neoseo Options PRO - begin */
+				if (isset($this->request->post['image_width'])) {
+			$data['image_width'] = $this->request->post['image_width'];
+		} elseif (!empty($option_info) && isset($option_info['image_width'])) {
+			$data['image_width'] = $option_info['image_width'];
+		} else {
+			$data['image_width'] = '';
+		}
+
+		if (isset($this->request->post['image_height'])) {
+			$data['image_height'] = $this->request->post['image_height'];
+		} elseif (!empty($option_info) && isset($option_info['image_height'])) {
+			$data['image_height'] = $option_info['image_height'];
+		} else {
+			$data['image_height'] = '';
+		}
+
+		if (isset($this->request->post['image_view'])) {
+			$data['image_view'] = $this->request->post['image_view'];
+		} elseif (!empty($option_info) && isset($option_info['image_view'])) {
+			$data['image_view'] = $option_info['image_view'];
+		} else {
+			$data['image_view'] = '';
+		}
+
+		if (isset($this->request->post['image_view_name'])) {
+			$data['image_view_name'] = $this->request->post['image_view_name'];
+		} elseif (!empty($option_info) && isset($option_info['image_view_name'])) {
+			$data['image_view_name'] = $option_info['image_view_name'];
+		} else {
+			$data['image_view_name'] = '';
+		}
+		if($this->config->get('neoseo_product_options_pro_status') == 1) {
+			$data['product_options_status'] = true;
+		} else {
+			$data['product_options_status'] = false;
+		}
+				/*  Neoseo Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['option_values'][] = array(]]></search>
+			<add position="after"><![CDATA[				/*  Neoseo Options PRO - begin */
+				'status'          => $option_value['status'],
+				/*  Neoseo Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (isset($this->request->post['option_description'])) {]]></search>
+			<add position="before"><![CDATA[		/*  Neoseo Options PRO - begin */
+		$this->language->load('catalog/neoseo_product_options_pro_product');
+		$data['entry_option_value_status'] = $this->language->get('entry_option_value_status');
+		$data['text_enabled'] = $this->language->get('text_enabled');
+		$data['text_disabled'] = $this->language->get('text_disabled');
+		$data['entry_width'] = $this->language->get('entry_width');
+		$data['entry_height'] = $this->language->get('entry_height');
+		$data['entry_view'] = $this->language->get('entry_view');
+		$data['entry_view_name'] = $this->language->get('entry_view_name');
+
+		$data['text_view_list'] = $this->language->get('text_view_list');
+		$data['text_view_slider'] = $this->language->get('text_view_slider');
+		$data['text_view_name_label'] = $this->language->get('text_view_name_label');
+		$data['text_view_name_popup'] = $this->language->get('text_view_name_popup');
+		/*  Neoseo Options PRO - end */
+		]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[if (isset($data['product_option'])) {]]></search>
+			<add position="before"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		if($this->config->get('neoseo_product_options_pro_status') == 1) {
+			$this->load->model('tool/neoseo_product_options_pro');
+			if (isset($this->request->post['product_option_related']) &&
+				isset($this->request->post['use_related_options']) &&
+				$this->request->post['product_option_related']) {
+
+				$unset_option_keys = $this->model_tool_neoseo_product_options_pro->addProductOptions($this->request->post['product_option_related'], $product_id);
+				if($unset_option_keys) {
+					if(isset($unset_option_keys['option_id'])) {
+						foreach ($unset_option_keys['option_id'] as $key) {
+							unset($data['product_option'][$key]);
+						}
+					}
+					if(isset($data['product_option'])) {
+						foreach ($data['product_option'] as $product_option_key => $product_option_value) {
+							$option_key = array();
+							$updated_keys = array();
+							foreach ($product_option_value['product_option_value'] as $product_option_value_id_key => $product_option_value_id_values) {
+								if(!in_array($product_option_value_id_values['option_value_id'], $unset_option_keys['option_value_id'])) {
+									unset($data['product_option'][$product_option_key]['product_option_value'][$product_option_value_id_key]);
+								} else {
+									unset($unset_option_keys['option_value_id'][$product_option_value_id_values['option_value_id']]);
+								}
+								if(isset($unset_option_keys['options_values'][$product_option_value['option_id']])) {
+									$current_option_values = $unset_option_keys['options_values'][$product_option_value['option_id']];
+									foreach ($current_option_values as $current_option_value_key => $null) {
+										$option_key[] = $current_option_value_key;
+									}
+									if(in_array($product_option_value_id_values['option_value_id'], $option_key)) {
+										$updated_keys[] = $product_option_value_id_values['option_value_id'];
+										$data['product_option'][$product_option_key]['product_option_value'][$product_option_value_id_key]['quantity'] = $current_option_values[$product_option_value_id_values['option_value_id']];
+									}
+								}
+							}
+							$current_options = $unset_option_keys['options_values'][$product_option_value['option_id']];
+							foreach ($updated_keys as $updated_key) {
+								unset($current_options[$updated_key]);
+							}
+							foreach ($current_options as $current_option_value_id => $quantity) {
+								$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_id = '" . (int)$product_option_value['product_option_id'] . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option_value['option_id'] . "', option_value_id = '" . (int)$current_option_value_id . "', quantity = '" . (int)$quantity . "', subtract = '1', price = '', price_prefix = '', points = '', points_prefix = '', weight = '', weight_prefix = ''");
+							}
+						}
+					}
+					if(isset($unset_option_keys['new_options'])) {
+						$this->load->model('catalog/option');
+						foreach ($unset_option_keys['new_options'] as $new_option) {
+							$product_option = $this->model_catalog_option->getOption($new_option);
+							$product_option_values = $this->model_catalog_option->getOptionValues($new_option);
+							$this->db->query("INSERT INTO " . DB_PREFIX . "product_option SET product_id = '" . (int)$product_id . "', option_id = '" . (int)$product_option['option_id'] . "', required = '1'");
+
+							$product_option_id = $this->db->getLastId();
+
+							foreach ($product_option_values as $product_option_value) {
+								if(isset($unset_option_keys['options_values'][$new_option][$product_option_value['option_value_id']])) {
+									$quantity = $unset_option_keys['options_values'][$new_option][$product_option_value['option_value_id']];
+									$this->db->query("INSERT INTO " . DB_PREFIX . "product_option_value SET product_option_id = '" . (int)$product_option_id . "', product_id = '" . (int)$product_id . "', option_id = '" . (int)$new_option . "', option_value_id = '" . (int)$product_option_value['option_value_id'] . "', quantity = '" . (int)$quantity . "', subtract = '1', price = '', price_prefix = '', points = '', points_prefix = '', weight = '', weight_prefix = ''");
+								}
+							}
+						}
+					}
+				}
+			} else {
+				$this->model_tool_neoseo_product_options_pro->deleteProductOptions($product_id);
+			}
+		}
+		/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$this->db->query("DELETE FROM " . DB_PREFIX . "product WHERE product_id = '" . (int)$product_id . "'")]]></search>
+			<add position="after"><![CDATA[		/* Neoseo Product Options PRO - begin */
+		if($this->config->get('neoseo_product_options_pro_status') == 1) {
+			$this->load->model('tool/neoseo_product_options_pro');
+			$this->model_tool_neoseo_product_options_pro->deleteProductOptions($product_id);
+		}
+		/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/model/catalog/option.php">
+
+		<operation>
+			<search><![CDATA[$this->db->query("INSERT INTO `" . DB_PREFIX . "option` SET type = '" . $this->db->escape($data['type']) . "', sort_order = '" . (int)$data['sort_order'] . "'");]]></search>
+			<add position="replace"><![CDATA[				/*  Neoseo Options PRO - begin */
+				$this->db->query("INSERT INTO `" . DB_PREFIX . "option` SET type = '" . $this->db->escape($data['type']) . "', sort_order = '" . (int)$data['sort_order'] . "', image_width = '" . (int)$data['image_width'] . "', image_height = '" . (int)$data['image_height'] . "', image_view = '" . (int)$data['image_view'] . "', image_view_name = '" . (int)$data['image_view_name'] . "' ");
+				/*  Neoseo Options PRO - end */]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$this->db->query("UPDATE `" . DB_PREFIX . "option` SET type = '" . $this->db->escape($data['type']) . "', sort_order = '" . (int)$data['sort_order'] . "' WHERE option_id = '"]]></search>
+			<add position="replace"><![CDATA[				/*  Neoseo Options PRO - begin */
+				$this->db->query("UPDATE `" . DB_PREFIX . "option` SET type = '" . $this->db->escape($data['type']) . "', sort_order = '" . (int)$data['sort_order'] . "', image_width = '" . (int)$data['image_width'] . "', image_height = '" . (int)$data['image_height'] . "', image_view = '" . (int)$data['image_view'] . "', image_view_name = '" . (int)$data['image_view_name'] . "' WHERE option_id = '"
+				/*  Neoseo Options PRO - end */]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$option_value_data[] = array(]]></search>
+			<add position="after"><![CDATA[				/*  Neoseo Options PRO - begin */
+				'status'          => isset($option_value['status'])?$option_value['status']:'',
+				/*  Neoseo Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[sort_order = '" . (int)$option_value['sort_order'] . "']]></search>
+			<add position="replace"><![CDATA[sort_order = '" . (int)$option_value['sort_order'] . "'".(($this->config->get('neoseo_product_options_pro_status') == 1)?(", status = '" . (int)$option_value['status'] . "'"):"")."]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/catalog/product_form.tpl">
+		<operation>
+			<search><![CDATA[<?php echo $tab_image; ?>]]></search>
+			<add position="after"><![CDATA[            <!-- Neoseo Product Options PRO - begin -->
+            <?php if($product_options_status) { ?>
+            <li><a href="#tab-image-option" data-toggle="tab"><?php echo $tab_image_option; ?></a></li>
+            <?php } ?>
+            <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="tab-design">]]></search>
+			<add position="before"><![CDATA[            <!-- Neoseo Product Options PRO - begin -->
+			<?php if($product_options_status) { ?>
+            <?php echo $template_options_pro_image;?>
+            <?php } ?>
+            <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<div class="tab-pane" id="tab-option">]]></search>
+			<add position="after"><![CDATA[            <!-- Neoseo Product Options PRO - begin -->
+			<?php if($product_options_status) { ?>
+            <?php echo $template_options_pro;?>
+            <?php } ?>
+            <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/catalog/option_form.tpl">
+
+		<operation>
+			<search><![CDATA[<label class="col-sm-2 control-label" for="input-sort-order"><?php echo $entry_sort_order; ?></label>]]></search>
+			<add position="before" offset="1"><![CDATA[                <!-- Neoseo Options PRO - begin -->
+			<?php if($product_options_status) { ?>
+               <div class="form-group">
+				<label class="col-sm-2 control-label" for="input-entry-width"><?php echo $entry_width; ?></label>
+				<div class="col-sm-10">
+					<input type="text" name="image_width" value="<?php echo $image_width; ?>"  id="input-entry-width" class="form-control" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="input-entry-height"><?php echo $entry_height; ?></label>
+				<div class="col-sm-10">
+					<input type="text" name="image_height" value="<?php echo $image_height; ?>"  id="input-image-height" class="form-control" />
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="input-image-view"><?php echo $entry_view; ?></label>
+				<div class="col-sm-10">
+					<select name="image_view" id="input-image-view" class="form-control">
+						<?php if ($image_view) { ?>
+						<option value="1" selected="selected"><?php echo $text_view_list; ?></option>
+						<option value="0"><?php echo $text_view_slider; ?></option>
+						<?php } else { ?>
+						<option value="1"><?php echo $text_view_list; ?></option>
+						<option value="0" selected="selected"><?php echo $text_view_slider; ?></option>
+						<?php } ?>
+					</select>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label" for="input-image-view-name"><?php echo $entry_view_name; ?></label>
+				<div class="col-sm-10">
+					<select name="image_view_name" id="input-image-view-name" class="form-control">
+						<?php if ($image_view_name) { ?>
+						<option value="1" selected="selected"><?php echo $text_view_name_label; ?></option>
+						<option value="0"><?php echo $text_view_name_popup; ?></option>
+						<?php } else { ?>
+						<option value="1"><?php echo $text_view_name_label; ?></option>
+						<option value="0" selected="selected"><?php echo $text_view_name_popup; ?></option>
+						<?php } ?>
+					</select>
+				</div>
+			</div>
+			<?php } ?>
+                <!-- Neoseo Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-right"><?php echo $entry_sort_order; ?></td>]]></search>
+			<add position="after"><![CDATA[                <!-- Neoseo Options PRO - begin -->
+				<?php if($product_options_status) { ?>
+                <td class="text-center">Статус</td>
+                <?php } ?>
+                <!-- Neoseo Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<td class="text-right"><input type="text" name="option_value[<?php echo $option_value_row; ?>][sort_order]" value="<?php echo $option_value['sort_order']; ?>" class="form-control" /></td>]]></search>
+			<add position="after"><![CDATA[                <!-- Neoseo Options PRO - begin -->
+			<?php if($product_options_status) { ?>
+                <td class="text-center">
+                    <select name="option_value[<?php echo $option_value_row; ?>][status]" id="input-status" class="form-control">
+                    <?php if (isset($option_value['status']) && $option_value['status'] == 1) { ?>
+                    <option value="1" selected="selected"><?php echo $text_enabled; ?></option>
+                    <option value="0"><?php echo $text_disabled; ?></option>
+                    <?php } else { ?>
+                    <option value="1"><?php echo $text_enabled; ?></option>
+                    <option value="0" selected="selected"><?php echo $text_disabled; ?></option>
+                    <?php } ?>
+                    </select>
+                </td>
+                <?php } ?>
+                <!--  Neoseo Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[html += '  <td class="text-right"><input type="text" name="option_value[' + option_value_row + '][sort_order]" value="" placeholder="<?php echo $entry_sort_order; ?>" class="form-control" /></td>';]]></search>
+			<add position="after"><![CDATA[	/* Neoseo Options PRO - begin */
+			<?php if($product_options_status) { ?>
+	html += '<td class="text-center">';
+	html += '<select name="option_value[' + option_value_row + '][status]" id="input-status" class="form-control">';
+	html += '<option value="1" selected="selected"><?php echo $text_enabled; ?></option>';
+	html += '<option value="0"><?php echo $text_disabled; ?></option>';
+	html += '</select>';
+ 	html += '</td>';
+ 	<?php } ?>
+	/* Neoseo Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<?php echo $text_option; ?>]]></search>
+			<add position="after"><![CDATA[      <!-- Neoseo Product Options PRO - begin -->
+			<?php if($product_options_status) { ?>
+      <li><a href="<?php echo $neoseo_option; ?>"><?php echo $text_neoseo_option; ?></a></li>
+      <?php } ?>
+      <!-- Neoseo Product Options PRO - begin -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[
+            $this->document->getScripts();
+            ]]></search>
+			<add position="before"><![CDATA[	/* Neoseo Product Options PRO - begin */
+			$this->document->addScript('catalog/view/javascript/neoseo_product_options_pro.js');
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[
+            $this->document->getStyles();
+            ]]></search>
+			<add position="before"><![CDATA[	/* Neoseo Product Options PRO - begin */
+					if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/stylesheet/neoseo_product_options_pro.css')) {
+						$this->document->addStyle('catalog/view/theme/' . $this->config->get('config_template') . '/stylesheet/neoseo_product_options_pro.css');
+					} else {
+						$this->document->addStyle('catalog/view/theme/default/stylesheet/neoseo_product_options_pro.css');
+					}
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/product.php">
+		<operation>
+			<search><![CDATA[if ($product_info)]]></search>
+			<add position="after"><![CDATA[			/* Neoseo Product Options PRO - begin */
+			if($this->config->get('neoseo_product_options_pro_status') == 1) {
+				$data['product_options_status'] = true;
+				$this->load->model('module/neoseo_product_options_pro');
+				$data['product_options_pro'] = $this->model_module_neoseo_product_options_pro->getProductOptions($product_id);
+			} else {
+				$data['product_options_status'] = false;
+			}
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if ($product_info['minimum']]]></search>
+			<add position="before"><![CDATA[			/* Neoseo Product Options PRO - begin */
+			$data['product_status'] = $product_info['stock_status'];
+			if (isset($product_info['stock_status_id']) && isset($colors_status[$product_info['stock_status_id']])) {
+				$data['product_stock_status_color'] = $colors_status[$product_info['stock_status_id']]['font_color'];
+			}else{
+				$data['product_stock_status_color'] = '#8c8c8c';
+			}
+			$data['stock_checkout'] = $this->config->get('config_stock_checkout');
+			$data['template_product'] = $this->load->controller('module/neoseo_product_options_pro/includeTemplate', 'product/neoseo_product_options_pro_product.tpl');
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$product_option_value_data[] = array(]]></search>
+			<add position="before"><![CDATA[				/* Neoseo Product Options PRO - begin */
+			if(isset($option['image_width']) && $option['image_width']){
+							$opt_img_wight = $option['image_width'];
+						}else{
+							$opt_img_wight = 50;
+						}
+
+						if(isset($option['image_height']) && $option['image_height']){
+							$opt_img_height = $option['image_height'];
+						}else{
+							$opt_img_height = 50;
+						}
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['image'                   => $this->model_tool_image->resize($option_value['image'], 50, 50),]]></search>
+			<add position="replace"><![CDATA[				/* Neoseo Product Options PRO - begin */
+				'image'                   => $this->model_tool_image->resize($option_value['image'], $opt_img_wight, $opt_img_height),
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['type'                 => $option['type'],]]></search>
+			<add position="after"><![CDATA[				/* Neoseo Product Options PRO - begin */
+			'image_width'          => $option['image_width'],
+				'image_height'         => $option['image_height'],
+				'image_view'           => $option['image_view'],
+				'image_view_name'      => $option['image_view_name'],
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/{category,manufacturer,search,special,product}.php">
+		<operation>
+			<search><![CDATA[$data['products'] = array();]]></search>
+			<add position="before"><![CDATA[			/* Neoseo Product Options PRO - begin */
+			$this->load->language('module/neoseo_product_options_pro');
+			$data['button_reset'] = $this->language->get('options-button-reset');
+			$data['product_list_status'] = $this->config->get('neoseo_product_options_pro_product_list_status');
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][] = array(]]></search>
+			<add position="replace"><![CDATA[
+				/* Neoseo Product Options PRO - begin */
+				$options = array();
+				if($this->config->get('neoseo_product_options_pro_status') && $data['product_list_status'] == 1) {
+					foreach ($this->model_catalog_product->getProductOptions($result['product_id']) as $option) {
+						$product_option_value_data = array();
+
+						foreach ($option['product_option_value'] as $option_value) {
+							if (!$option_value['subtract'] || isset($option_value['quantity'])) {
+
+								$product_option_value_data[] = array(
+									'product_option_value_id' => $option_value['product_option_value_id'],
+									'option_value_id'         => $option_value['option_value_id'],
+									'name'                    => $option_value['name'],
+									'image'                   => $this->model_tool_image->resize($option_value['image'], 50, 50),
+									'price'                   => $price,
+									'price_prefix'            => $option_value['price_prefix']
+								);
+							}
+						}
+
+						$options[] = array(
+						    'product_option_id'    => $option['product_option_id'],
+						    'product_option_value' => $product_option_value_data,
+						    'option_id'            => $option['option_id'],
+						    'name'                 => $option['name'],
+						    'type'                 => $option['type'],
+						    'value'                => $option['value'],
+						    'required'             => $option['required']
+						);
+					}
+				}
+				$data['products'][] = array(
+					'options'     => $options,
+					/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['limit']]]></search>
+			<add position="before"><![CDATA[			/* Neoseo Product Options PRO - begin */
+			$data['template_product_list'] = $this->load->controller('module/neoseo_product_options_pro/includeTemplate','product/neoseo_product_options_pro_product_list.tpl');
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[$product_option_value_data[] = array(]]></search>
+			<add position="before"><![CDATA[				/* Neoseo Product Options PRO - begin */
+				if($this->config->get('neoseo_product_options_pro_status') == 1) {
+					$query = $this->db->query("SELECT * FROM " . DB_PREFIX . "product_option_pro_to_product pop "
+					    . "LEFT JOIN " . DB_PREFIX . "product_option_pro op ON (pop.product_option_pro_id = op.product_option_pro_id) "
+					    . "LEFT JOIN " . DB_PREFIX . "product_option_pro_image_value opi ON (pop.product_id = opi.product_id) "
+					    . "WHERE pop.product_id = '" . (int)$product_id . "' AND op.status_image = 1 "
+					    . "AND opi.option_value_id = '" . (int)$product_option_value['product_option_value_id'] . "' LIMIT 1");
+					if($query->num_rows){
+						$product_option_value['image'] = $query->row['image'] ? $query->row['image'] : $product_option_value['image'];
+					}
+				}
+				/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[option_value ov ON (pov.option_value_id = ov.option_value_id]]></search>
+			<add position="replace"><![CDATA[option_value ov ON (pov.option_value_id = ov.option_value_id ".(($this->config->get('neoseo_product_options_pro_status')==1)?"AND ov.status=1":"")."]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['type'                 => $product_option['type'],]]></search>
+			<add position="after"><![CDATA[				/* Neoseo Product Options PRO - begin */
+				'image_width'          => isset($product_option['image_width'])?$product_option['image_width']:"",
+				'image_height'         => isset($product_option['image_height'])?$product_option['image_height']:"",
+				'image_view'           => isset($product_option['image_view'])?$product_option['image_view']:"",
+				'image_view_name'      => isset($product_option['image_view_name'])?$product_option['image_view_name']:"",
+			/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/product/product.tpl">
+		<operation>
+			<search><![CDATA[<li><?php echo $text_model; ?> <?php echo $model; ?></li>]]></search>
+			<add position="replace"><![CDATA[            <!-- Neoseo Product Options PRO - begin -->
+            <?php if($product_options_status) { ?>
+            <li><?php echo $text_model; ?> <span class="articul"><?php echo $model; ?></span></li>
+            <?php } else { ?>
+            <li><?php echo $text_model; ?> <?php echo $model; ?></li>
+            <?php } ?>
+            <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- Neoseo Product Options PRO - begin -->
+<?php if (isset($product_options_pro['stock_checkout'])) { ?>
+	<?php include($template_product); ?>
+<?php } ?>
+<!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<h2><?php echo $price; ?></h2>]]></search>
+			<add position="replace"><![CDATA[              <!-- Neoseo Product Options PRO - begin -->
+              <h2 class="price-area"><?php echo $price; ?></h2>
+              <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[ <h2><?php echo $special; ?></h2>]]></search>
+			<add position="replace"><![CDATA[              <!-- Neoseo Product Options PRO - begin -->
+              <h2 class="price-area"><?php echo $special; ?></h2>
+              <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/neoseo_unistor/template/product/product.tpl">
+		<operation>
+			<search><![CDATA[<span class=""><?php echo $model; ?>]]></search>
+			<add position="replace"><![CDATA[
+                        <!-- Neoseo Product Options PRO - begin -->
+                        <?php if($product_options_status) { ?><span class="product_model"><?php echo $model; ?><?php } else { ?><span class=""><?php echo $model; ?><?php } ?>
+                        <!-- Neoseo Product Options PRO - end -->
+                        ]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- Neoseo Product Options PRO - begin -->
+<?php if (isset($product_options_pro['stock_checkout'])) { ?>
+	<?php include($template_product); ?>
+<?php } ?>
+<!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/product/{category,manufacturer_info,search,special}.tpl">
+		<operation>
+			<search><![CDATA[<div class="description-top">]]></search>
+			<add position="after"><![CDATA[                                <!-- Neoseo Product Options PRO - begin -->
+           <?php include($template_product_list);?>
+           <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<button type="button" onclick="cart.add('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs hidden-sm hidden-md"><?php echo $button_cart; ?></span></button>]]></search>
+			<add position="replace"><![CDATA[<!-- Neoseo Product Options PRO - begin -->
+            <?php if($product_list_status == 1) { ?>
+                <button type="button" onclick="addToCart('<?php echo $product['product_id']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs hidden-sm hidden-md"><?php echo $button_cart; ?></span></button>
+            <?php } else { ?>
+                <button type="button" onclick="cart.add('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs hidden-sm hidden-md"><?php echo $button_cart; ?></span></button>
+            <?php } ?>
+<!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/neoseo_unistor/template/product/{category,manufacturer_info,search,special}.tpl">
+		<operation>
+			<search><![CDATA[<div class="description-top">]]></search>
+			<add position="after"><![CDATA[                                <!-- Neoseo Product Options PRO - begin -->
+           <?php include($template_product_list);?>
+           <!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<button class="cart-add-button" type="button" onclick="cart.add('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs"><?php echo $button_cart; ?></span></button>]]></search>
+			<add position="replace"><![CDATA[<!-- Neoseo Product Options PRO - begin -->
+            <?php if($product_list_status == 1) { ?>
+                <button class="cart-add-button" type="button" onclick="addToCart('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>', this);"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs"><?php echo $button_cart; ?></span></button>
+            <?php } else { ?>
+                <button class="cart-add-button" type="button" onclick="cart.add('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs"><?php echo $button_cart; ?></span></button>
+            <?php } ?>
+<!-- Neoseo Product Options PRO - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="system/library/cart.php">
+		<operation>
+			<search><![CDATA[$product_data[] = array(]]></search>
+			<add position="before"><![CDATA[				/* Neoseo Product Options PRO - begin */
+				if($this->config->get('neoseo_product_options_pro_status') == 1 && $option_data) {
+					$options_pro = $this->getOptionsRecount($cart['product_id'], $option_data);
+					if($options_pro) {
+						if(isset($options_pro['article']) && $options_pro['article']) {
+							$product_query->row['model'] = $options_pro['article'];
+						}
+						if(isset($options_pro['image']) && $options_pro['image']) {
+							$product_query->row['image'] = $options_pro['image'];
+						}
+						if (isset($options_pro['quantity']) && $options_pro['quantity'] && ($options_pro['quantity'] > $cart['quantity'])) {
+							$stock = true;
+						}
+						if(isset($options_pro['price']) && (float)$options_pro['price']) {
+							$price = $options_pro['price'];
+							$option_price = 0;
+						}
+					}
+				}
+				/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[public function add]]></search>
+			<add position="before"><![CDATA[	/* Neoseo Product Options PRO - begin */
+	protected function getOptionsRecount($product_id, $options) {
+
+		$option_values = array();
+		$table_letter = 'a';
+		$after_sql = '';
+
+		$sql = "SELECT DISTINCT a.product_option_pro_value_id FROM " . DB_PREFIX . "product_option_pro_detail a";
+
+		foreach ($options as $option) {
+			$option_values[] = $option['product_option_value_id'];
+			$table_letter++;
+			$sql .= " INNER JOIN " . DB_PREFIX . "product_option_pro_detail ".$table_letter." on ".$table_letter.".product_option_pro_value_id = a.product_option_pro_value_id";
+			$after_sql .= " AND ".$table_letter.".option_value_id = " . (int)$option['option_value_id'];
+		}
+		
+		$sql .= " WHERE a.product_id = " . (int)$product_id . $after_sql;
+
+		$sql = "SELECT pbov.quantity, pbov.sku as article, pbop.price
+			FROM " . DB_PREFIX . "product_option_pro_to_product pbo
+			RIGHT JOIN " . DB_PREFIX . "product_option_pro_price pbop ON(pbo.product_id = pbop.product_id)
+			LEFT JOIN " . DB_PREFIX . "product_option_pro_value pbov ON(pbop.product_option_pro_value_id = pbov.product_option_pro_value_id)
+			WHERE pbop.customer_group_id = " . (int)$this->config->get('config_customer_group_id') . " AND pbo.product_id = " . (int)$product_id . " AND pbov.product_option_pro_value_id IN($sql)";
+
+		$query = $this->db->query($sql);
+
+		$main_option_image = $this->db->query("SELECT povi.image
+						       FROM " . DB_PREFIX . "product_option_pro_image poi
+						       LEFT JOIN " . DB_PREFIX . "product_option_value pov ON(poi.option_id = pov.option_id AND poi.product_id = pov.product_id)
+						       LEFT JOIN " . DB_PREFIX . "product_option_pro_image_value povi ON(pov.product_option_value_id = povi.option_value_id)
+						       WHERE poi.product_id = " . (int)$product_id . " AND povi.product_id = " . (int)$product_id . " AND povi.option_value_id IN(" . implode(',', $option_values) . ") LIMIT 1");
+		if($main_option_image->num_rows) {
+			$query->row['image'] = $main_option_image->row['image'];
+		}
+
+		return $query->row;
+	}
+	/* Neoseo Product Options PRO - end */]]></add>
+		</operation>
+	</file>
+
+</modification>

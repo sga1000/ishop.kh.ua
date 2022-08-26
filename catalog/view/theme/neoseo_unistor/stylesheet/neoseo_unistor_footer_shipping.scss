@@ -1,0 +1,52 @@
+.shipping {
+  display: flex;
+  margin-bottom: 5px;
+  height: 40px;
+  width: 100%;
+
+  .ukr_np {
+    background: url(../image/shipping/shipping-ico.png) no-repeat;
+    background-position: 1px 0;
+    cursor: pointer;
+    width: 46px;
+    height: 40px;
+    display: block;
+  }
+
+  .ukr_up {
+    background: url(../image/shipping/shipping-ico.png) no-repeat;
+    background-position: -43px 0;
+    cursor: pointer;
+    width: 46px;
+    height: 40px;
+    display: block;
+  }
+
+  .ukr_ne {
+    background: url(../image/shipping/shipping-ico.png) no-repeat;
+    background-position: -86px 0;
+    cursor: pointer;
+    width: 46px;
+    height: 40px;
+    display: block;
+  }
+
+  .currier {
+    background: url(../image/shipping/shipping-ico.png) no-repeat;
+    background-position: -131px 0;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: block;
+  }
+
+  .pickpoint {
+    background: url(../image/shipping/shipping-ico.png) no-repeat;
+    background-position: -172px 0;
+    cursor: pointer;
+    width: 58px;
+    height: 40px;
+    display: block;
+  }
+
+}

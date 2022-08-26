@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<modification>
+	<name>NeoSeo MicroData</name>
+	<code>neoseo_microdata</code>
+	<version>1.0</version>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+	<file path="catalog/controller/checkout/cart.php">
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+			/* NeoSeo MicroData - begin */
+			if ($this->config->get('neoseo_microdata_status')) {
+				$this->load->model('module/neoseo_microdata');
+				$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+			}
+			/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/checkout.php">
+		<operation>
+			<search>
+				<![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/checkout.tpl')) ]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/checkout/confirm.php">
+		<operation>
+			<search>
+				<![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/confirm.tpl')) ]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/footer.php">
+		<operation>
+			<search>
+				<![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/common/footer.tpl')) ]]>
+			</search>
+			<add position="before">
+				<![CDATA[/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$data['microdata'] = $this->model_module_neoseo_microdata->getMicroData();
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/common/home.php">
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$this->model_module_neoseo_microdata->setMicroData(array(), 'home');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/category.php">
+		<operation>
+			<search>
+				<![CDATA['product_id'  => $result['product_id']]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					/* NeoSeo MicroData - begin */
+					'price_microdata' => $this->currency->format($this->tax->calculate($result['special'] ? $result['special'] : $result['price'], $result['tax_class_id'], $this->config->get('config_tax')), '', '', false),
+					'manufacturer'  => $result['manufacturer'],
+					/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[			$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before" index="0">
+				<![CDATA[
+			/* NeoSeo MicroData - begin */
+			if ($this->config->get('neoseo_microdata_status')) {
+				$this->load->model('module/neoseo_microdata');
+				$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+				$data['url_microdata'] = $this->url->link('product/category', 'path=' . $this->request->get['path'] . $url . ($page == 1 ? '' : '&page=' . $page));
+				$this->model_module_neoseo_microdata->setMicroData($data, 'category');
+			}
+			/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/compare.php">
+		<operation>
+			<search>
+				<![CDATA['product_id'   => $product_info['product_id']]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					/* NeoSeo MicroData - begin */
+					'price_microdata' => $this->currency->format($this->tax->calculate($product_info['special'] ? $product_info['special'] : $product_info['price'], $product_info['tax_class_id'], $this->config->get('config_tax')), '', '', false),
+					'manufacturer'  => $product_info['manufacturer'],
+					/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$data['url_microdata'] = $this->url->link('product/compare');
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+			$this->model_module_neoseo_microdata->setMicroData($data, 'products');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/manufacturer.php">
+		<operation>
+			<search index="0">
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA['product_id'  => $result['product_id']]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					/* NeoSeo MicroData - begin */
+					'price_microdata' => $this->currency->format($this->tax->calculate($result['special'] ? $result['special'] : $result['price'], $result['tax_class_id'], $this->config->get('config_tax')), '', '', false),
+					'manufacturer'  => $manufacturer_info['name'],
+					/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search index="1">
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+			/* NeoSeo MicroData - begin */
+			if ($this->config->get('neoseo_microdata_status')) {
+				$this->load->model('module/neoseo_microdata');
+				$data['url_microdata'] = $this->url->link('product/manufacturer/info', 'manufacturer_id=' . $this->request->get['manufacturer_id'] .  $url);
+				$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+				$this->model_module_neoseo_microdata->setMicroData($data, 'products');
+			}
+			/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/product.php">
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+			/* NeoSeo MicroData - begin */
+			if ($this->config->get('neoseo_microdata_status')) {
+				$this->load->model('module/neoseo_microdata');
+				$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+				$reviews = array();
+				$review_total = $this->model_catalog_review->getTotalReviewsByProductId($product_id);
+				$results = $this->model_catalog_review->getReviewsByProductId($this->request->get['product_id'], 0, $review_total);
+				foreach ($results as $result) {
+					$reviews[] = array(
+						'author'		=> $result['author'],
+						'text'			=> nl2br($result['text']),
+						'rating'		=> (int)$result['rating'],
+						'date_added'	=> date($this->language->get('date_format_short'), strtotime($result['date_added']))
+					);
+				}
+				$data['microdata_review'] = array(
+					'rating'		=> $product_info['rating'],
+					'reviews'		=> $product_info['reviews'],
+					'reviewses'		=> $reviews
+				);
+				$data['price_microdata'] = $this->currency->format($this->tax->calculate($product_info['special'] ? $product_info['special'] : $product_info['price'], $product_info['tax_class_id'], $this->config->get('config_tax')), '', '', false);
+				$data['quantity'] = $product_info['quantity'];
+				$this->model_module_neoseo_microdata->setMicroData($data, 'product');
+			}
+			/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/search.php">
+		<operation>
+			<search>
+				<![CDATA['product_id'  => $result['product_id']]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+					/* NeoSeo MicroData - begin */
+					'price_microdata' => $this->currency->format($this->tax->calculate($result['special'] ? $result['special'] : $result['price'], $result['tax_class_id'], $this->config->get('config_tax')), '', '', false),
+					'manufacturer'  => $result['manufacturer'],
+					/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$data['url_microdata'] = $this->url->link('product/search', $url);
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+			$this->model_module_neoseo_microdata->setMicroData($data, 'products');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/controller/product/special.php">
+		<operation>
+			<search>
+				<![CDATA['product_id'  => $result['product_id']]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+				/* NeoSeo MicroData - begin */
+				'price_microdata' => $this->currency->format($this->tax->calculate($result['special'] ? $result['special'] : $result['price'], $result['tax_class_id'], $this->config->get('config_tax')), '', '', false),
+				'manufacturer'  => $result['manufacturer'],
+				/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+		<operation>
+			<search>
+				<![CDATA[$data['column_left'] = $this->load->controller('common/column_left')]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+		/* NeoSeo MicroData - begin */
+		if ($this->config->get('neoseo_microdata_status')) {
+			$this->load->model('module/neoseo_microdata');
+			$data['url_microdata'] = $this->url->link('product/special', $url);
+			$this->model_module_neoseo_microdata->setMicroData($data['breadcrumbs'], 'breadcrumbs');
+			$this->model_module_neoseo_microdata->setMicroData($data, 'products');
+		}
+		/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="system/library/document.php">
+		<operation>
+			<search>
+				<![CDATA[public function setTitle($title) ]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+	/* NeoSeo MicroData - begin */
+	private $microdata = array();
+
+	public function setMicroData($microdata) {
+		$this->microdata[] = $microdata;
+	}
+
+	public function getMicroData() {
+		return $this->microdata;
+	}
+	/* NeoSeo MicroData - end */]]>
+			</add>
+		</operation>
+	</file>
+	<file path="catalog/view/theme/*/template/common/footer.tpl">
+		<operation>
+			<search>
+				<![CDATA[</footer>]]>
+			</search>
+			<add position="before">
+				<![CDATA[
+  <!-- NeoSeo MicroData - begin -->
+  <?php if (isset($microdata) && $microdata) echo $microdata; ?>
+  <!-- NeoSeo MicroData - end -->]]>
+			</add>
+		</operation>
+	</file>
+</modification>

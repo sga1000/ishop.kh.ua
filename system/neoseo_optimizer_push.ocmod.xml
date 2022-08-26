@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Optimizer Push</name>
+	<version>2.0</version>
+	<code>neoseo_optimizer_push</code>
+	<author>NeoSeo</author>
+	<link>https://neoseo.com.ua</link>
+
+	<file path="system/library/document.php">
+		<operation>
+			<search><![CDATA[public function addStyle]]></search>
+			<add position="after"><![CDATA[		global $config;
+		if($config->get('neoseo_optimizer_status')) {
+			if ($config->get("neoseo_optimizer_minify_css")) {
+				$header_href = "/media/" . (str_replace("/", "_", $href));
+			} else {
+				$header_href = "/" . $href;
+			}
+			$css_pushes = $config->get('css_pushes');
+			if(!is_array($css_pushes)) {
+				$css_pushes = array();
+			}
+			if(!in_array($href, $css_pushes)){
+				$link = 'Link: <' . $header_href . '>; rel=preload; as=style';
+				header($link, false);
+				$css_pushes[] = $href;
+				$config->set('css_pushes', $css_pushes);
+			}
+		}]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[public function addScript]]></search>
+			<add position="after"><![CDATA[		global $config;
+		if($config->get('neoseo_optimizer_status')) {
+			if ($config->get("neoseo_optimizer_minify_js")) {
+				$header_href = "/media/" . (str_replace("/", "_", $href));
+			} else {
+				$header_href = "/" . $href;
+			}
+			$js_pushes = $config->get('js_pushes');
+			if(!is_array($js_pushes)) {
+				$js_pushes = array();
+			}
+			if(!in_array(basename($href), $js_pushes)){
+				$link = 'Link: <' . $header_href . '>; rel=preload; as=script';
+				header($link, false);
+				$js_pushes[] = basename($href);
+				$config->set('js_pushes', $js_pushes);
+			}
+		}]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[if ($this->config->get($analytic['code'] . '_status')) {]]></search>
+			<add position="after"><![CDATA[				if($this->config->get('bot_lighthouse'))
+					continue;]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/footer.php">
+		<operation>
+			<search><![CDATA[if ($status[$this->config->get('config_store_id')]) {]]></search>
+			<add position="before"><![CDATA[		if($this->config->get('bot_lighthouse')){
+			$status[$this->config->get('config_store_id')] = 0;
+		}]]></add>
+		</operation>
+	</file>
+
+</modification>

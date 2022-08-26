@@ -1,0 +1,215 @@
+<div class="module">
+   <?php if (!empty($heading_title)) { ?>
+   <h3><?php echo $heading_title; ?></h3>
+   <?php } ?>
+   <div class="row">
+	  <?php if (!empty($related_products)) { ?>
+	  <div class="related-products-container">
+		 <?php foreach ($related_products as $product) { ?>
+		 <div class="product-layout product-grid col-md-4 col-sm-6 col-xs-12" >
+			<div class="product-thumb box-shadow box-corner clearfix">
+			   <div class="product-thumb_top">
+				  <!-- NeoSeo Product Labels - begin -->
+				  <?php if (isset($product['labels']) && $product['labels'] ) { ?>
+				  <?php foreach($product['labels'] as $label_wrap => $group_label) { ?>
+				  <div class="<?php echo $label_wrap; ?>">
+					 <?php foreach($group_label as $label) { ?>
+					 <div class="tag <?php echo $label['label_type']; ?> <?php echo $label['position']; ?> <?php echo $label['class']; ?>"><span style="<?php echo $label['style']; ?>"><?php echo $label['text']; ?></span></div>
+					 <?php } ?>
+				  </div>
+				  <?php } ?>
+				  <?php } ?>
+				  <!-- NeoSeo Product Labels - end -->
+				  <div class="image">
+					 <a href="<?php echo $product['href']; ?>">
+					 <?php if ($product['thumb']) { ?>
+					 <img class="hoverable" src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>" class="img-responsive"  over="<?php echo $product['thumb']; ?>" out="<?php echo $product['thumb']; ?>" />
+					 <?php } else { ?>
+					 <img src="<?php echo $product['thumb']; ?>" alt="<?php echo $product['name']; ?>" title="<?php echo $product['name']; ?>"  class="img-responsive" />
+					 <?php } ?>
+					 </a>
+				  </div>
+				  <meta  content="<?php echo $product['href']; ?>" >
+			   </div>
+			   <div class="product-thumb_middle">
+				  <div class="rating-container">
+					 <div class="caption">
+						<h4 ><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+					 </div>
+					 <span class="rating"  <?php if ($product['rating']) { ?> <?php }?> >
+					 <?php if ($product['rating']) { ?>
+					 <meta  content="<?php echo $product['md_review_count']; ?>">
+					 <meta  content="<?php echo $product['rating']; ?>">
+					 <?php for ($i = 1; $i <= 5; $i++) { ?>
+					 <?php if ($product['rating'] < $i) { ?>
+					 <span class="fa fa-stack"><i class="fa fa-star-o fa-stack-2x"></i></span>
+					 <?php } else { ?>
+					 <span class="fa fa-stack"><i class="fa fa-star fa-stack-2x"></i><i class="fa fa-star-o fa-stack-2x"></i></span>
+					 <?php }?>
+					 <?php } ?>
+					 <?php } ?>
+				  </div>
+				  <div class="caption">
+					 <h4 ><a href="<?php echo $product['href']; ?>"><?php echo $product['name']; ?></a></h4>
+					  <?php if (isset($product['additional_attributes']) && $product['additional_attributes']) { ?>
+                          <div class="attributes-top">
+							  <?php $counter = 1; ?>
+							  <?php foreach ($product['additional_attributes'] as $key => $attribute) { ?>
+                                  <span><b><?php echo $attribute['name']; ?></b> <?php echo $attribute['text']; ?></span><?php if ($counter < $product['total_attributes']) { echo $divider ? $divider : ''; } ?>
+								  <?php $counter++;
+							  } ?>
+                          </div>
+					  <?php } ?>
+				  </div>
+				  <?php if ($product['price']) { ?>
+				  <div class="price-and-cart-add">
+					 <div class="price-wrapper">
+						<p class="price" >
+						   <meta  content="<?php echo rtrim(preg_replace("/[^0-9\.]/", "", ($product['special'] ? $product['special'] : $product['price'])), '.'); ?>" />
+						   <meta  content="<?php echo $md_currency ?>"/>
+						   <link  href="http://schema.org/<?php echo ($product['md_availability'] ? " InStock" : "OutOfStock") ?>" />
+						   <?php if (!$product['special']) { ?>
+						   <?php echo $product['price']; ?>
+						   <?php } else { ?>
+						   <span class="price-old"><?php echo $product['price']; ?></span><span class="price-new"><?php echo $product['special']; ?></span>
+						   <?php } ?>
+						   <?php if ($product['tax']) { ?>
+						   <span class="price-tax"><?php echo $text_tax; ?> <?php echo $product['tax']; ?></span>
+						   <?php } ?>
+						</p>
+					 </div>
+					 <?php } ?>
+					 <div class="input-group input-quantity-group" data-min-quantity="<?php echo $product['minimum']; ?>">
+						<span class="input-group-btn">
+						<button type="button" class="btn btn-default" data-type="minus" data-field="input-quantity">
+						<span class="glyphicon glyphicon-minus"></span>
+						</button>
+						</span>
+						<input type="text" name="quantity" value="<?php echo $product['minimum']; ?>" size="2" class="form-control quantity">
+						<span class="input-group-btn">
+						<button type="button" class="btn btn-default" data-type="plus" data-field="input-quantity">
+						<span class="glyphicon glyphicon-plus"></span>
+						</button>
+						</span>
+					 </div>
+					 <div class="button-group-cart">
+						<h6 class="text-right stock-status-text-<?php echo $product['stock_status_id']; ?>" style="color:<?php echo $product['stock_status_color'] ?>;"><span><?php echo $product['stock_status']; ?></span></h6>
+						<!-- NeoSeo Notify When Available - begin -->
+						<?php if (!$product['snwa_status']) { ?>
+						<!-- NeoSeo Notify When Available - end -->
+						<!-- NeoSeo Product Options PRO - begin -->
+						<?php if ($product_list_status == 1) { ?>
+						<button class="cart-add-button"  type="button" onclick="addToCart('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>', this);"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs hidden-sm hidden-md"><?php echo $button_cart; ?></span></button>
+						<?php } else { ?>
+						<button class="cart-add-button" type="button" onclick="cart.add('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');"><i class="fa fa-shopping-cart"></i> <span class="hidden-xs"><?php echo $button_cart; ?></span></button>
+						<?php } ?>
+						<!-- NeoSeo Product Options PRO - end -->
+						<!-- NeoSeo Notify When Available - begin -->
+						<?php } ?>
+						<!-- NeoSeo Notify When Available - end -->
+					 </div>
+				  </div>
+			   </div>
+			   <div class="description" >
+				  <div class="description-top">
+					 <!-- NeoSeo Product Options PRO - begin -->
+					 <?php if ($product['options']) { ?>
+					 <form id="product_options_form_<?php echo $product['product_id']; ?>" class="options_pro_form">
+						<input type="hidden" name="product_id" value="<?php echo $product['product_id']; ?>">
+						<input type="hidden" name="minimum" value="<?php echo $product['minimum']; ?>">
+						<div class="caption">
+						   <?php foreach($product['options'] as $option) { ?>
+						   <?php if ($option['type'] == 'select') { ?>
+						   <div class="form-group<?php echo ($option['required'] ? ' required' : ''); ?>">
+							  <label class="control-label" for="input-option<?php echo $option['product_option_id']; ?>"><?php echo $option['name']; ?></label>
+							  <select name="option[<?php echo $option['product_option_id']; ?>]" id="input-option<?php echo $option['product_option_id']; ?>" class="form-control">
+								 <option value=""><?php echo $text_select; ?></option>
+								 <?php foreach ($option['product_option_value'] as $option_value) { ?>
+								 <option value="<?php echo $option_value['product_option_value_id']; ?>"><?php echo $option_value['name']; ?></option>
+								 <?php } ?>
+							  </select>
+						   </div>
+						   <?php } ?>
+						   <?php if ($option['type'] == 'radio') { ?>
+						   <div class="form-group<?php echo ($option['required'] ? ' required' : ''); ?>">
+							  <label class="control-label"><?php echo $option['name']; ?></label>
+							  <div id="input-option<?php echo $option['product_option_id']; ?>">
+								 <?php foreach ($option['product_option_value'] as $option_value) { ?>
+								 <div class="radio">
+									<label>
+									<input type="radio" name="option[<?php echo $option['product_option_id']; ?>]" value="<?php echo $option_value['product_option_value_id']; ?>" /> <?php echo $option_value['name']; ?>
+									</label>
+								 </div>
+								 <?php } ?>
+							  </div>
+						   </div>
+						   <?php } ?>
+						   <?php if ($option['type'] == 'checkbox') { ?>
+						   <div class="form-group<?php echo ($option['required'] ? ' required' : ''); ?>">
+							  <label class="control-label"><?php echo $option['name']; ?></label>
+							  <div id="input-option<?php echo $option['product_option_id']; ?>">
+								 <?php foreach ($option['product_option_value'] as $option_value) { ?>
+								 <div class="checkbox">
+									<label>
+									<input type="checkbox" name="option[<?php echo $option['product_option_id']; ?>][]" value="<?php echo $option_value['product_option_value_id']; ?>" /> <?php echo $option_value['name']; ?>
+									</label>
+								 </div>
+								 <?php } ?>
+							  </div>
+						   </div>
+						   <?php } ?>
+						   <?php if ($option['type'] == 'image') { ?>
+						   <div class="form-group<?php echo ($option['required'] ? ' required' : ''); ?>">
+							  <label class="control-label"><?php echo $option['name']; ?></label>
+							  <div id="input-option<?php echo $option['product_option_id']; ?>">
+								 <?php foreach ($option['product_option_value'] as $option_value) { ?>
+								 <div class="radio">
+									<label>
+									<input type="radio" name="option[<?php echo $option['product_option_id']; ?>]" value="<?php echo $option_value['product_option_value_id']; ?>" />
+									<img src="<?php echo $option_value['image']; ?>" alt="<?php echo $option_value['name'] . ($option_value['price'] ? ' ' . $option_value['price_prefix'] . $option_value['price'] : ''); ?>" class="img-thumbnail" /> <?php echo $option_value['name']; ?>
+									</label>
+								 </div>
+								 <?php } ?>
+							  </div>
+						   </div>
+						   <?php } ?>
+						   <?php } ?>
+						</div>
+					 </form>
+					 <?php } ?>
+					 <!-- NeoSeo Product Options PRO - end -->
+					 <?php echo $product['short_description']; ?>
+				  </div>
+				  <div class="description-bottom">
+					 <div class="button-group">
+						<a class="wishlist-button" type="button" onclick="wishlist.add('<?php echo $product['product_id']; ?>');">
+						<i class="fa fa-heart"></i>
+						<span><?php echo $text_wishlist; ?></span>
+						</a>
+						<a class="compare-button" type="button"  onclick="compare.add('<?php echo $product['product_id']; ?>');">
+						<i class="fa fa-exchange"></i>
+						<span><?php echo $text_compare; ?></span>
+						</a>
+						<?php if (!$product['snwa_status'] && $neoseo_quick_order_status) { ?>
+						<a class="buy-one-click" onclick="showQuickOrder('<?php echo $product['product_id']; ?>', '<?php echo $product['minimum']; ?>');">
+						<i class="ns-mouse"></i>
+						<span><?php echo $text_one_click_buy; ?></span>
+						</a>
+						<?php } else { ?>
+						<!-- NeoSeo Notify When Available - begin -->
+						<a type="button" class="buy-one-click" data-checked="<?php echo $product['snwa_requested'] ? 'true' : 'false'; ?>" data-product="<?php echo $product['product_id']?>"  onclick="showNWA('<?php echo $product['product_id'] ?>',this);">
+						<i class="fa fa-bell"></i>
+						<span><?php echo $product['snwa_requested'] ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+						</a>
+						<!-- NeoSeo Notify When Available - end -->
+						<?php }  ?>
+					 </div>
+				  </div>
+			   </div>
+			</div>
+		 </div>
+		 <?php } ?>
+	  </div>
+	  <?php } ?>
+   </div>
+</div>

@@ -1,0 +1,38 @@
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+<meta content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" name="viewport" />
+
+<div style=" max-width:300px;">
+	<a href="https://novaposhta.ua">
+		<img src='{store_url}/emails/novapost.png' alt='Логотип Новой почты' style="max-width:100%;" />
+	</a>
+</div>
+<table class="emailMain" border="0" cellspacing="0" cellpadding="0" style="width:100% ; max-width:800px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;font-size:14px;line-height:1.3;color:#444;background:#FFF;margin-bottom:0px;">
+	<tr>
+		<td class='top' style="color:#858789;font-size:16px;font-weight:bold;padding-bottom:10px; padding-top:30px">
+			<strong>Заказ №{order_id} отправлен Новой почтой</strong>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<p style="margin-bottom:20px; margin-top:20px;">Уважаемый, {firstname} {lastname}!</p>
+			<p style="margin-bottom:20px;">
+				Ваш заказ <b>№{order_id}</b> сформирован и отправлен Новой почтой по адресу {shipping_zone}, {shipping_city}, {shipping_address_2}.<br>
+				Номер декларации для получения посылки: {status_comment}
+			</p>
+			<p>Отследить Ваш заказ можно <a href="https://novaposhta.ua/ru/tracking">тут</a>.</p>
+		</td>
+	</tr>
+</table>
+<table class="emailContacts" border="0" cellspacing="0" cellpadding="0" style=" border-top:1px solid #ddd;width:100%;max-width:800px;font-family: 'Helvetica Neue', Helvetica, sans-serif;font-size:14px;line-height:1.3;color:#444;background:#FFF;margin:35px 0 20px;">
+	<tr>
+		<td valign="top" style="padding-top:20px; max-width:250px;">
+			<a href="{store_url}"><img src='{logo_url}' alt='Логотип магазина' style="max-width:100%;" /></a>
+		</td>
+		<td valign="top" align="left" style="font-size:13px;line-height:1.4;font-weight:normal;min-width:300px;padding-top:20px;padding-left:20px;">
+			<p style="margin-top:0px;">
+				Звоните по телефонам:<br>
+				<span style='font-size:14px;line-height:2;'>{store_telephone}</span><br>
+			</p>
+		</td>
+	</tr>
+</table>

@@ -1,0 +1,89 @@
+<modification>
+	<name>NeoSeo SMS Notify</name>
+	<version>1.0</version>
+	<code>neoseo-sms-notify</code>
+	<author>NeoSeo</author>
+	<link>http://neoseo.com.ua/sms-notify</link>
+
+	<file path="admin/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['description'] = $this->document->getDescription();]]></search>
+			<add position="after"><![CDATA[			/* NeoSeo SMS Notify - begin */
+			$data['sms_notify'] = false;
+			if ($this->config->get('neoseo_sms_notify_status') == 1) {
+				$this->document->addScript('view/javascript/neoseo_sms_notify.js');
+				$data['sms_notify'] = true;
+			}
+			/* NeoSeo SMS Notify - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/controller/common/footer.php">
+		<operation>
+			<search><![CDATA[$this->user->isLogged()]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo SMS Notify - begin */
+		$data['sms_notify'] = false;
+		if ($this->config->get('neoseo_sms_notify_status') == 1) {
+			$data['sendSmsModal'] = $this->load->controller('marketing/neoseo_sms_notify');
+			$data['sms_notify'] = true;
+		}
+		/* NeoSeo SMS Notify - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/header.tpl">
+		<operation>
+			<search><![CDATA[<ul class="nav pull-right">]]></search>
+			<add position="after"><![CDATA[    <!-- NeoSeo SMS Notify - begin -->
+    <?php if (isset($sms_notify) && $sms_notify) { ?>
+    <li><a data-toggle="modal" data-target="#modal-sms-notify"><i class="fa fa-envelope fa-lg"></i></a></li>
+    <?php } ?>
+    <!-- NeoSeo SMS Notify - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/footer.tpl">
+		<operation>
+			<search><![CDATA[</body></html>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo SMS Notify - begin -->
+<?php if (isset($sms_notify) && $sms_notify) { ?>
+<?php echo $sendSmsModal; ?>
+<?php } ?>
+<!-- NeoSeo SMS Notify - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/checkout/order.php">
+		<operation>
+			<search><![CDATA[function addOrderHistory]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo SMS Notify - begin */
+		$this->load->controller('module/neoseo_sms_notify/handler_order_history_add',array(
+			'order_id' => $order_id,
+			'order_status_id' => $order_status_id,
+			'comment' => $comment,
+			'notify' => $notify,
+		));
+		/* NeoSeo SMS Notify - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[->addOrderHistory]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo SMS Notify - begin */
+		$this->config->set("neoseo_sms_notify_status",0); // Disables stupid notification
+		/* NeoSeo SMS Notify - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/catalog/review.php">
+		<operation>
+			<search><![CDATA[function addReview]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo SMS Notify - begin */
+		$this->load->controller('module/neoseo_sms_notify/handler_review_add', array(
+			'product_id' => $product_id,
+			'data' => $data
+		));
+		/* NeoSeo SMS Notify - end */]]></add>
+		</operation>
+	</file>
+
+
+</modification>

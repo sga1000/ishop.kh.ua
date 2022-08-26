@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Redirect Manager</name>
+    <version>1.0</version>
+    <code>neoseo-redirect-manager</code>
+    <author>NeoSeo</author>
+	
+    <file path="admin/controller/common/menu.php">
+        <operation>
+            <search><![CDATA[$data['backup'] = $this->url->link('tool/backup', 'token=' . $this->session->data['token'], 'SSL');]]></search>
+            <add position="after"><![CDATA[
+        /* NeoSeo Redirect Manager - begin */
+        $data['neoseo_redirect_manager'] = false;
+        if( isset($this->session->data['token']) ) {
+            if( $this->user->hasPermission('access','tool/neoseo_redirect_manager') && $this->config->get("neoseo_redirect_manager_status") ){
+                $this->language->load("tool/neoseo_redirect_manager");
+                $data['text_neoseo_redirect_manager'] = $this->language->get("text_neoseo_redirect_manager");
+                $data['neoseo_redirect_manager'] = $this->url->link('tool/neoseo_redirect_manager', 'token=' .$this->session->data['token'], 'SSL');
+            }
+        }
+        /* NeoSeo Redirect Manager - end */
+            ]]></add>
+        </operation>
+    </file>
+	
+    <file path="admin/view/template/common/menu.tpl">
+        <operation>
+            <search><![CDATA[<li><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>]]></search>
+            <add position="before"><![CDATA[
+            <!-- NeoSeo Redirect Manager - begin -->
+            <?php if( $neoseo_redirect_manager ) { ?><li><a href="<?php echo $neoseo_redirect_manager; ?>"><?php echo $text_neoseo_redirect_manager; ?></a></li><?php } ?>
+            <!-- NeoSeo Redirect Manager - end -->
+            ]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<li<?php echo $backup_style; ?>><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>]]></search>
+            <add position="before"><![CDATA[
+            <!-- NeoSeo Redirect Manager - begin -->
+            <?php if( $neoseo_redirect_manager ) { ?><li><a href="<?php echo $neoseo_redirect_manager; ?>"><?php echo $text_neoseo_redirect_manager; ?></a></li><?php } ?>
+            <!-- NeoSeo Redirect Manager - end -->
+            ]]></add>
+        </operation>
+    </file>
+
+    <file path="system/engine/front.php">
+        <operation>
+            <search><![CDATA[public function dispatch($action, $error) {]]></search>
+            <add position="after"> <![CDATA[
+        /* NeoSeo Redirect Manager - begin */
+        if ( ( defined('REDIRECT_ENABLED') || (!defined('HTTP_CATALOG') && isset($_SERVER['HTTP_HOST']) ) ) && $this->registry->get("config")->get('neoseo_redirect_manager_status') == 1 ) {
+            $this->registry->get("load")->model('tool/neoseo_redirect_manager');
+            $this->registry->get("model_tool_neoseo_redirect_manager")->checkUrl();
+        }
+        /* NeoSeo Redirect Manager - end */
+                ]]></add>
+        </operation>
+    </file>
+</modification>

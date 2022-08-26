@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Products Sort</name>
+    <version>1.0</version>
+    <code>neoseo-products-sort</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua</link>
+
+    <file path="catalog/model/catalog/product.php">
+        <operation>
+            <search><![CDATA[if (isset($data['sort']) && in_array($data['sort'], $sort_data)) {]]></search>
+            <add position="before"><![CDATA[		/* NeoSeo Products Sort - begin */
+		if( $this->config->get('neoseo_products_sort_status') == 1 && $this->config->get('neoseo_products_sort_sort_products') == 1){
+			$order_instock = "(p.quantity > 0) DESC,";
+		}else{
+			$order_instock = "";
+		}
+		/* NeoSeo Products Sort - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$sql .= " ORDER BY]]></search>
+            <add position="replace"><![CDATA[$sql .= " ORDER BY $order_instock]]></add>
+        </operation>
+
+    </file>
+
+</modification>

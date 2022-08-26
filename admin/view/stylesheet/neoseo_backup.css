@@ -1,0 +1,31 @@
+.list .action {
+	display: inline-block;
+	height: 24px;
+	width: 24px;
+	margin-right: 10px;
+	margin-top: 4px;
+}
+
+.list .action:last-child {
+	margin-right: 0 !important;
+}
+
+.list .edit {
+	background: url("../image/edit_24.png") 0 0 no-repeat;
+}
+
+.list .reset {
+	background: url("../image/cancel_24.png") 0 0 no-repeat;
+}
+
+.list .backup-download {
+	background: url("../image/download_24.png") 0 0 no-repeat;
+}
+
+.list .backup-restore {
+	background: url("../image/repair_24.png") 0 0 no-repeat;
+}
+
+.list .backup-delete {
+	background: url("../image/delete_24.png") 0 0 no-repeat;
+}

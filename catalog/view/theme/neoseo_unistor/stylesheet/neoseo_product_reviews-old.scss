@@ -1,0 +1,88 @@
+.product-reviews-container {
+  margin: 0 -10px;
+  padding: 20px;
+  border: 1px solid $module-border-color;
+  background: $module-background-color;
+  margin-bottom: 15px;
+  & > h6 {
+    font-size: 12px;
+    margin-top: 10px;
+    color: $title-color;
+    height: 27px;
+    overflow: hidden;
+  }
+
+  & > h4 {
+    height: 39px;
+    overflow: hidden;
+  }
+  img {
+    margin: 0 auto;
+  }
+  a {
+    color: $title-color;
+  }
+  .rating {
+    margin: 10px 0 24px;
+  }
+  .autor {
+    cursor: pointer;
+    border: 1px solid $button-color-hover;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    border-radius: 3px;
+    padding: 15px;
+    h5 {
+      color: $title-color;
+    }
+    p {
+      color: $title-color;
+      height: 50px;
+      word-break: break-all;
+      text-align: left;
+      overflow: hidden;
+    }
+    &::before {
+      content: '';
+      display: block;
+      background: $module-background-color;
+      border-left: 1px solid $button-color-hover;
+      border-top: 1px solid $button-color-hover;
+      width: 15px;
+      height: 15px;
+      position: absolute;
+      transform: rotate(45deg);
+      bottom: 148px;
+      left: 0;
+      right: 0;
+      margin: 0 auto;
+    }
+
+  }
+  &:hover {
+    a {
+      color: $button-color;
+    }
+    h6 {
+      a {
+        color: $button-color;
+      }
+
+    }
+    .autor {
+      background: $button-color-hover;
+      h5 {
+        color: $button-color-text-hover;
+      }
+      p {
+        color: $button-color-text-hover;
+      }
+      &::before {
+        background: $button-color-hover;
+      }
+    }
+
+  }
+}

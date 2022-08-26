@@ -1,0 +1,141 @@
+User-agent: *
+
+Disallow:/admin
+Allow: /catalog/*.css
+Allow: /catalog/*.js
+Allow: /catalog/*.js
+Allow: /catalog/*.png
+Allow: /catalog/*.gif
+Allow: /catalog/*.ttf
+Allow: /catalog/*.otf
+Allow: /catalog/*.woff
+Disallow:/download
+Disallow:/system
+
+Disallow:/admin/uk/my-account/
+Disallow:/admin/uk/create-account/
+Disallow:/admin/uk/login/
+Disallow:/admin/uk/logout/
+Disallow:/admin/uk/forgot-password/
+Disallow:/admin/uk/edit-account/
+Disallow:/admin/uk/address-book/
+Disallow:/admin/uk/vouchers/
+Disallow:/admin/uk/reward-points/
+Disallow:/admin/uk/wishlist/
+Disallow:/admin/uk/newsletter/
+Disallow:/admin/uk/order-history/
+Disallow:/admin/uk/transactions/
+Disallow:/admin/uk/returns/
+Disallow:/admin/uk/request-return/
+Disallow:/admin/uk/downloads/
+
+Disallow:/admin/uk/affiliates/
+Disallow:/admin/uk/create-affiliate-account/
+Disallow:/admin/uk/affiliate-login/
+Disallow:/admin/uk/affiliate-logout/
+Disallow:/admin/uk/affiliate-forgot-password/
+Disallow:/admin/uk/edit-affiliate-account/
+Disallow:/admin/uk/change-affiliate-password/
+Disallow:/admin/uk/affiliate-transactions/
+Disallow:/admin/uk/affiliate-payment-options/
+Disallow:/admin/uk/affiliate-tracking-code/
+
+
+Disallow:/admin/uk/checkout/
+Disallow:/admin/uk/cart/
+Disallow:/admin/uk/index.php?route=checkout/success
+
+Disallow:/admin/uk/search/
+Disallow:/*?filter_name=
+Disallow:/*&filter_name=
+Disallow:/*?filter_ocfilter=
+Disallow:/*&filter_ocfilter=
+Disallow:/*?filter_sub_category=
+Disallow:/*&filter_sub_category=
+Disallow:/*?filter_description=
+Disallow:/*&filter_description=
+
+Disallow:/admin/uk/compare-products/
+
+Disallow:/*?sort=
+Disallow:/*&sort=
+Disallow:/*?order=
+Disallow:/*&order=
+Disallow:/*?limit=
+Disallow:/*&limit=
+Disallow:/*?tracking=
+Disallow:/*&tracking=
+
+
+User-agent: Yandex
+
+Disallow:/admin
+Allow: /catalog/*.css
+Allow: /catalog/*.js
+Allow: /catalog/*.js
+Allow: /catalog/*.png
+Allow: /catalog/*.gif
+Allow: /catalog/*.ttf
+Allow: /catalog/*.otf
+Allow: /catalog/*.woff
+Disallow:/download
+Disallow:/system
+
+Disallow:/admin/uk/my-account/
+Disallow:/admin/uk/create-account/
+Disallow:/admin/uk/login/
+Disallow:/admin/uk/logout/
+Disallow:/admin/uk/forgot-password/
+Disallow:/admin/uk/edit-account/
+Disallow:/admin/uk/address-book/
+Disallow:/admin/uk/vouchers/
+Disallow:/admin/uk/reward-points/
+Disallow:/admin/uk/wishlist/
+Disallow:/admin/uk/newsletter/
+Disallow:/admin/uk/order-history/
+Disallow:/admin/uk/transactions/
+Disallow:/admin/uk/returns/
+Disallow:/admin/uk/request-return/
+Disallow:/admin/uk/downloads/
+
+Disallow:/admin/uk/affiliates/
+Disallow:/admin/uk/create-affiliate-account/
+Disallow:/admin/uk/affiliate-login/
+Disallow:/admin/uk/affiliate-logout/
+Disallow:/admin/uk/affiliate-forgot-password/
+Disallow:/admin/uk/edit-affiliate-account/
+Disallow:/admin/uk/change-affiliate-password/
+Disallow:/admin/uk/affiliate-transactions/
+Disallow:/admin/uk/affiliate-payment-options/
+Disallow:/admin/uk/affiliate-tracking-code/
+
+
+Disallow:/admin/uk/checkout/
+Disallow:/admin/uk/cart/
+Disallow:/admin/uk/index.php?route=checkout/success
+
+Disallow:/admin/uk/search/
+Disallow:/*?filter_name=
+Disallow:/*&filter_name=
+Disallow:/*?filter_ocfilter=
+Disallow:/*&filter_ocfilter=
+Disallow:/*?filter_sub_category=
+Disallow:/*&filter_sub_category=
+Disallow:/*?filter_description=
+Disallow:/*&filter_description=
+
+Disallow:/admin/uk/compare-products/
+
+Disallow:/*?sort=
+Disallow:/*&sort=
+Disallow:/*?order=
+Disallow:/*&order=
+Disallow:/*?limit=
+Disallow:/*&limit=
+Disallow:/*?tracking=
+Disallow:/*&tracking=
+
+
+Host:https://ishop.kh.ua
+Sitemap:https://ishop.kh.ua/sitemap.xml
+        

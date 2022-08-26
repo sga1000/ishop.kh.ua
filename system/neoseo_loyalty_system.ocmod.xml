@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Loyalty System</name>
+    <version>1.0</version>
+    <code>neoseo-loyalty-system</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua/loyalty-system</link>
+
+    <file path="catalog/controller/checkout/cart.php">
+        <operation>
+            <search><![CDATA[if (file_exists(DIR_TEMPLATE . $this->config->get('config_template') . '/template/checkout/cart.tpl')) {]]></search>
+            <add position="before"><![CDATA[
+			/* NeoSeo Loyalty System - begin */
+			if($this->config->get('neoseo_loyalty_system_status') && (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price'))){
+				$data['loyality_data'] = $this->model_total_neoseo_loyalty_system->getTextDiscountInCart();
+			} else {
+				$data['loyality_data'] = "";
+			}
+			/* NeoSeo Loyalty System - End */
+			]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/common/cart.php">
+        <operation>
+            <search><![CDATA[$data['checkout'] = $this->url->link('checkout/checkout', '', 'SSL');]]></search>
+            <add position="after"><![CDATA[
+			/* NeoSeo Loyalty System - begin */
+			if($this->config->get('neoseo_loyalty_system_status') && (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price'))){
+				$data['loyality_data'] = $this->model_total_neoseo_loyalty_system->getTextDiscountInCart();
+			} else {
+				$data['loyality_data'] = "";
+			}
+			/* NeoSeo Loyalty System - End */
+			]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/controller/checkout/cart.php">
+        <operation>
+            <search><![CDATA[$json['total']]]></search>
+            <add position="before"><![CDATA[
+			/* NeoSeo Loyalty System - begin */
+			if($this->config->get('neoseo_loyalty_system_status') && (($this->config->get('config_customer_price') && $this->customer->isLogged()) || !$this->config->get('config_customer_price'))){
+				$json['loyality_data']  = $this->model_total_neoseo_loyalty_system->getTextDiscountInCart();
+			} else {
+				$json['loyality_data'] = "";
+			}
+			/* NeoSeo Loyalty System - End */
+			]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/checkout/cart.tpl">
+        <operation>
+            <search><![CDATA[<?php if ($attention) { ?>]]></search>
+            <add position="before"><![CDATA[
+  <!-- NeoSeo Loyalty System - begin -->
+  <?php if ($loyality_data) { ?>
+  <div class="alert alert-info loyality_info"><i class="fa fa-info-circle"></i> <?php echo $loyality_data; ?></div>
+  <?php } ?>
+<!-- NeoSeo Loyalty System - End -->
+]]></add>
+        </operation>
+    </file>
+
+    <file path="catalog/view/theme/*/template/common/cart.tpl">
+        <operation>
+            <search><![CDATA[<?php if ($products || $vouchers) { ?>]]></search>
+            <add position="after"><![CDATA[
+  <!-- NeoSeo Loyalty System - begin -->
+  <li>
+      <?php if ($loyality_data) { ?>
+      <div class="alert alert-info loyality_info"><i class="fa fa-info-circle"></i> <?php echo $loyality_data; ?></div>
+      <?php } ?>
+  </li>
+<!-- NeoSeo Loyalty System - End -->
+]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/customer/customer.php">
+        <operation>
+            <search><![CDATA[customer/customer_form.tpl]]></search>
+            <add position="before"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->load->language('customer/neoseo_loyalty_system');
+		$data['entry_discount'] = $this->language->get('entry_customer_discount');
+		if (isset($this->request->post['discount_сustomer'])) {
+			$data['discount_сustomer'] = $this->request->post['discount_сustomer'];
+		} elseif (!empty($customer_info)) {
+			$data['discount_сustomer'] = $this->model_customer_customer->getCustomerDiscount($this->request->get['customer_id']);
+		} else {
+			$data['discount_сustomer'] = '';
+		}
+		$data['error_discount'] = '';
+		$data['neoseo_loyalty_system_status'] = $this->config->get('neoseo_loyalty_system_status');
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/model/customer/customer.php">
+        <operation>
+            <search><![CDATA[function getCustomer(]]></search>
+            <add position="before"><![CDATA[	/* NeoSeo Loyalty System - begin */
+	public function getCustomerDiscount($customer_id) {
+		$query = $this->db->query("SELECT discount FROM " . DB_PREFIX . "loyalty_customer_discount WHERE customer_id = '" . (int)$customer_id . "'");
+		if( !$query->num_rows ) {
+			return '';
+		}
+		return $query->row['discount'];
+	}
+	/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$customer_id = $this->db->getLastId();]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		if( floatval($data['discount_сustomer']) > 0 ) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "loyalty_customer_discount SET customer_id = '" . (int)$customer_id . "', discount = '" . $this->db->escape($data['discount_сustomer']) . "'");
+		}
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[function editCustomer(]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "loyalty_customer_discount WHERE customer_id = '" . (int)$customer_id . "'");
+		if( floatval($data['discount_сustomer']) > 0 ) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "loyalty_customer_discount SET customer_id = '" . (int)$customer_id . "', discount = '" . $this->db->escape($data['discount_сustomer']) . "'");
+		}
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$this->db->query("DELETE FROM " . DB_PREFIX . "customer WHERE]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "loyalty_customer_discount WHERE customer_id = '" . (int)$customer_id . "'");
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/customer/customer_form.tpl">
+        <operation>
+            <search><![CDATA[<label class="col-sm-2 control-label" for="input-firstname">]]></search>
+            <add position="before"><![CDATA[
+                        <!-- NeoSeo Loyalty System  - begin -->
+                        <?php if($neoseo_loyalty_system_status) {?>
+                        <label class="col-sm-2 control-label" for="input-discount"><?php echo $entry_discount; ?></label>
+                        <div class="col-sm-10">
+                          <input type="text" name="discount_сustomer" value="<?php echo $discount_сustomer; ?>" placeholder="<?php echo $entry_discount; ?>" id="input-discount" class="form-control" />
+                          <?php if ($error_discount) { ?>
+                          <div class="text-danger"><?php echo $error_discount; ?></div>
+                          <?php } ?>
+                        </div>
+                      <script>$('#input-discount').parents('.required').removeClass('required');</script>
+                      </div>
+                      <div class="form-group required">
+                      <?php } ?>
+                      <!-- NeoSeo Loyalty System  - end -->]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/controller/customer/customer_group.php">
+        <operation>
+            <search><![CDATA[customer/customer_group_form.tpl]]></search>
+            <add position="before"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->load->language('customer/neoseo_loyalty_system');
+		$data['entry_discount'] = $this->language->get('entry_group_discount');
+		if (isset($this->request->post['discount'])) {
+			$data['discount'] = $this->request->post['discount'];
+		} elseif (!empty($customer_group_info)) {
+			$data['discount'] = $this->model_customer_customer_group->getGroupDiscount($this->request->get['customer_group_id']);
+		} else {
+			$data['discount'] = '';
+		}
+		$data['error_discount'] = '';
+		$data['neoseo_loyalty_system_status'] = $this->config->get('neoseo_loyalty_system_status');
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/model/customer/customer_group.php">
+        <operation>
+            <search><![CDATA[function getCustomerGroup(]]></search>
+            <add position="before"><![CDATA[	/* NeoSeo Loyalty System - begin */
+	public function getGroupDiscount($group_id) {
+		$query = $this->db->query("SELECT discount FROM " . DB_PREFIX . "loyalty_group_discount WHERE group_id = '" . (int)$group_id . "'");
+		if( !$query->num_rows ) {
+			return '';
+		}
+		return $query->row['discount'];
+	}
+	/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$customer_group_id = $this->db->getLastId();]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		if( floatval($data['discount']) > 0 ) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "loyalty_group_discount SET group_id = '" . (int)$customer_group_id . "', discount = '" . $this->db->escape($data['discount']) . "'");
+		}
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[function editCustomerGroup(]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "loyalty_group_discount WHERE group_id = '" . (int)$customer_group_id . "'");
+		if( floatval($data['discount']) > 0 ) {
+			$this->db->query("INSERT INTO " . DB_PREFIX . "loyalty_group_discount SET group_id = '" . (int)$customer_group_id . "', discount = '" . $this->db->escape($data['discount']) . "'");
+		}
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[$this->db->query("DELETE FROM " . DB_PREFIX . "customer_group WHERE]]></search>
+            <add position="after"><![CDATA[		/* NeoSeo Loyalty System - begin */
+		$this->db->query("DELETE FROM " . DB_PREFIX . "loyalty_group_discount WHERE group_id = '" . (int)$customer_group_id . "'");
+		/* NeoSeo Loyalty System  - end */]]></add>
+        </operation>
+    </file>
+
+    <file path="admin/view/template/customer/customer_group_form.tpl">
+        <operation>
+            <search><![CDATA[<label class="col-sm-2 control-label" for="input-sort-order">]]></search>
+            <add position="before"><![CDATA[
+                        <!-- NeoSeo Loyalty System  - end -->
+                        <?php if($neoseo_loyalty_system_status) {?>
+                        <label class="col-sm-2 control-label" for="input-discount"><?php echo $entry_discount; ?></label>
+                        <div class="col-sm-10">
+                          <input type="text" name="discount" value="<?php echo $discount; ?>" placeholder="<?php echo $entry_discount; ?>" id="input-discount" class="form-control" />
+                          <?php if ($error_discount) { ?>
+                          <div class="text-danger"><?php echo $error_discount; ?></div>
+                          <?php } ?>
+                        </div>
+                      </div>
+                      <?php } ?>
+                      <div class="form-group">
+                      <!-- NeoSeo Loyalty System  - end -->]]></add>
+        </operation>
+    </file>
+</modification>

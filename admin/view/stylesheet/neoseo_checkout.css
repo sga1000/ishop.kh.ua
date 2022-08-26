@@ -1,0 +1,134 @@
+/* Tooltip */
+.tooltip {
+	display:none;
+	position:absolute;
+	border:1px solid #333;
+	background-color:#161616;
+	border-radius:5px;
+	padding:10px;
+	color:#fff;
+	font-size:12px Arial;
+	width: 200px;
+	text-align: justify;
+}
+/* Tabs */
+.vtabs a {
+	text-align: left;
+}
+
+/* Box */
+.box > .content {
+	border:none;
+	background: #fff;
+}
+.box .form td:nth-child(2) {
+	width: 200px;
+}
+.box .form td:first-child {
+	text-align: right;
+	width: 220px;
+}
+.box .form td:nth-child(3) {
+	text-align: right;
+	width: 220px;
+}
+
+.fields td:first-child {
+	width: 30%;
+    text-align: left;
+}
+.fields td:last-child {
+	text-align: left;
+	width: 70%;
+}
+
+/* Version */
+.quickcheckout {
+	color: #efefef;
+	width: 100%;
+	text-align: center;
+}
+.quickcheckout > a {
+	color: #efefef;
+}
+/* Logos */
+.quickcheckout-div {
+	display: inline-block;
+	width: 40%;
+	margin-bottom: 10px;
+	vertical-align: top;
+}
+.quickcheckout-div i {
+	padding-right: 10px;
+	float: left;
+}
+.quickcheckout-div i:hover {
+	color: #000;
+}
+/* Button */
+a.button {
+	-webkit-border-radius: 0px;
+	-moz-border-radius: 0px;
+	-khtml-border-radius: 0px;
+	border-radius: 0px;
+	background: #C71C22;
+}
+a.button:hover {
+	background: #333;
+}
+/* Breadcrumb */
+.breadcrumb {
+	background: #fff;
+	color: #666;
+	padding: 10px;
+	border-bottom: 1px solid #eee;
+	margin-bottom: 0;
+}
+.breadcrumb a {
+	color: #666;
+}
+
+.buttons_head .add-field{position: absolute;right: 36px;margin-top: 2px;margin-bottom: 2px;}
+.buttons_head {height: 32px;}
+.required { color: red }
+.ui-sortable{list-style-type:none;margin:0;padding:0;}
+.ui-sortable li{background-color:#F7F7F7;border-bottom: 1px solid #DDDDDD;position: relative;padding: 0;min-height:30px;}
+.ui-sortable li:hover{background-color:#F3F3F4;}
+.ui-sortable .handler {cursor: ns-resize; height:100%; width: 40px;position:absolute;left:0;top:0;}
+.ui-sortable .handler i {font-size: 24px;line-height: 36px;padding: 0 6px;}
+.ui-sortable .fields{margin: 0px 72px 0px 40px;}
+.ui-sortable .edit{position: absolute; right: 36px; top: 6px; width: 26px;}
+.ui-sortable .delete{position: absolute; right: 6px; top: 6px; width: 26px;}
+.ui-sortable .empty{background-color: #F9F9F2;border-left: 1px dashed #DADACF;border-right: 1px dashed #DADACF;}
+.ui-sortable .start {box-shadow:0 2px 3px #C1C1C6;opacity:0.7;}
+.ui-sortable .start .delete{display:none;}
+.ui-sortable li .title { line-height: 36px; }
+.ui-sortable li table { border-top: 1px solid #DADADE; }
+.ui-sortable .title { margin: 0px 65px 0px 40px; }
+.ui-sortable .disabled { color: gray; }
+
+.vtabs-content .header {
+    padding: 12px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.vtabs-content .buttons {
+    padding: 12px 0;
+    text-align:right;
+}
+
+.vtabs-content .buttons_head {
+    padding: 12px 0;
+    text-align:left;
+    line-height: 24px;
+}
+
+.vtabs-content .buttons_head a {
+    float:right;
+    padding: 0 15px;
+}
+
+.vtabs-content .fields table {
+    width: 100%;
+}
+

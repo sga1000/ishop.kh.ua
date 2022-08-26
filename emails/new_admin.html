@@ -1,0 +1,51 @@
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
+<meta content="width=device-width; initial-scale=1.0; maximum-scale=1.0;" name="viewport" />
+
+<p style="margin-bottom: 20px;font-size:16px;">
+	<b>Получен заказ №{order_id} от {order_date}</b>
+</p>
+
+<table border="0" style="font-family: 'Helvetica Neue', Helvetica, sans-serif;font-size:14px;max-width:800px;" width="100%">
+<tbody>
+	<tr style="background-color:rgba(0,0,0,0.1);font-weight:normal;font-size:13px">
+		<td height="20" style="padding: 5px;" width="60%">Наименование</td>
+		<td style="padding: 5px; text-align: right;" width="20%">Кол-во</td>
+		<td style="padding: 5px; text-align: right;" width="20%">Стоимость</td>
+	</tr>
+{product:start}
+	<tr>
+		<td style="padding: 5px; border-bottom: 1px dotted #ddd;">
+			<a href='{product_url}'>
+				<img src="{product_image}" alt='{product_name}' style="float:left;width:40px;height:40px;margin-right:12px;">
+			</a>
+			<a href="{product_url}" style='font-size:13px;color:#656769;text-decoration:underline;'>{product_name}</a>
+			<ul style="margin:5px 0 0 0;padding:5px 0 0 10px;font-size:11px;color:#999;">
+					{product_option}
+			</ul>
+			<br style="clear:both">
+		</td>
+		<td style="font-size:13px;padding:5px;border-bottom-width:1px;border-bottom-style:dotted;border-bottom-color:rgb(199,199,199);text-align:right;"><span style="font-family: Helvetica, sans-serif; text-align: right;">{product_quantity}</span></td>
+		<td style="font-size:13px;padding:5px;border-bottom-width:1px;border-bottom-style:dotted;border-bottom-color:rgb(199,199,199);text-align:right;"><span style="font-family: Helvetica, sans-serif; text-align: right;">{product_price}</span></td>
+	</tr>
+{product:stop}
+{tax:start}
+	<tr>
+		<td width="60%">&nbsp;</td>
+		<td align="right" width="20%"><b>{tax_title}:</b></td>
+		<td style="text-align: right;" width="20%"><span style="font-family: Helvetica, sans-serif;text-align: right;">{tax_value}</span></td>
+	</tr>
+{tax:stop}
+	<tr>
+		<td align="right" colspan="2" style="margin-top: 10px; border-top: 1px dotted #c7c7c7;" width="80%"><b>Итого:</b></td>
+		<td style="margin-top: 10px; border-top-width: 1px; border-top-style: dotted; border-top-color: rgb(199, 199, 199); font-size: 16px; text-align: right;" width="20%"><span style="font-family: Arial, Helvetica, sans-serif; text-align: right;">{total}</span></td>
+	</tr>
+</tbody>
+</table>
+
+<p style="font-size:13px;">
+	<b>Оплата:</b> {payment}<br />
+	<b>Доставка:</b> {shipment}, {shipping_cost}, {shipping_zone}, {shipping_city}<br />
+	<b>Покупатель:</b> {firstname} {lastname}, {telephone}, <a href="mailto:{email}">{email}</a><br />
+	<b>Комментарий:</b> {comment}
+</p>
+

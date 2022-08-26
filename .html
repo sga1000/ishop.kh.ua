@@ -1,0 +1,42 @@
+<div id="fonts" class="fonts-toggle">
+    <button type="button" @click="slideFontsController" class="btn"><i class="fa fa-cog"></i></button>
+    <div class="form-group">
+        <label><?php echo $text_fonts; ?></label>
+        <select @change="changeFontsController" :props="this">
+            <option value="Roboto">Roboto</option>
+            <option value="OpenSans">OpenSans</option>
+            <option value="Montserrat">Montserrat</option>
+            <option value="RobotoCondensed">RobotoCondensed</option>
+			<option value="RobotoCondensed">RobotoSlab</option>
+            <option value="SourceSansPro">SourceSansPro</option>
+            <option value="Merriweather">Merriweather</option>
+            <option value="Oswald">Oswald</option>
+            <option value="Yanone">Yanone</option></select>
+    </div>
+
+</div>
+<script>
+
+    $(document).ready(function () {
+        new AXIS({
+            container: 'fonts',
+            events: ['click','change'],
+            controllers: {
+                slideFontsController: function () {
+                    this.toggleClass(this.container, 'active');
+                },
+                changeFontsController: function (object) {
+                    this.changeFonts(object.value);
+                }
+            },
+            models: {
+                changeFonts: function (font) {
+                    document.body.style.fontFamily = `${font}, sans-serif`;
+                }
+            }
+        })
+    });
+
+
+
+</script>

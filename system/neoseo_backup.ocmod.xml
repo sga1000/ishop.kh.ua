@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Backup</name>
+	<version>1.0</version>
+	<code>neoseo-backup</code>
+	<author>Alexander Sorokin</author>
+	<link>http://seomag.com.ua/moduli/moduli-prochie/neoseo-backup</link>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['backup']]]></search>
+			<add position="after"><![CDATA[
+		/* NeoSeo Backup - begin */
+		$data['neoseo_backup'] = false;
+		if ($this->user->hasPermission('access','tool/neoseo_backup') && isset($this->session->data['token'])) {
+			$this->language->load("tool/neoseo_backup");
+			if ($this->config->get("neoseo_backup_status")) {
+				if ($this->config->get("neoseo_backup_replace_system_backup")) {
+					$data['text_backup'] = $this->language->get("text_neoseo_backup");
+					$data['backup'] = $this->url->link('tool/neoseo_backup', 'token='.$this->session->data['token'], 'SSL');
+				} else {
+					$data['text_neoseo_backup'] = $this->language->get("text_neoseo_backup");
+					$data['neoseo_backup'] = $this->url->link('tool/neoseo_backup', 'token='.$this->session->data['token'], 'SSL');
+				}
+			}
+		}
+		/* NeoSeo Backup - begin */
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<li><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>]]></search>
+			<add position="after"><![CDATA[
+			<?php if ($neoseo_backup) { ?><li><a href="<?php echo $neoseo_backup; ?>"><?php echo $text_neoseo_backup; ?></a></li><?php } ?>
+			]]></add>
+		</operation>
+	</file>
+
+</modification>

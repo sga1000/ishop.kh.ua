@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+    <name>NeoSeo Broken Links</name>
+    <version>1.0</version>
+    <code>neoseo-broken-links</code>
+    <author>NeoSeo</author>
+    <link>http://neoseo.com.ua/</link>
+	
+    <file path="admin/controller/common/menu.php">
+        <operation>
+            <search><![CDATA[$data['backup']]]></search>
+            <add position="after"><![CDATA[
+        /* NeoSeo Broken Links - begin */
+        $data['neoseo_broken_links'] = false;
+        if( isset($this->session->data['token']) ) {
+            if( $this->user->hasPermission('access','tool/neoseo_broken_links') && $this->config->get("neoseo_broken_links_status") ){
+                $this->language->load("tool/neoseo_broken_links");
+                $data['text_neoseo_broken_links'] = $this->language->get("text_neoseo_broken_links");
+                $data['neoseo_broken_links'] = $this->url->link('tool/neoseo_broken_links', 'token=' .$this->session->data['token'], 'SSL');
+            }
+        }
+        /* NeoSeo Broken Links - begin */
+            ]]></add>
+        </operation>
+    </file>
+	
+    <file path="admin/view/template/common/menu.tpl">
+        <operation>
+            <search><![CDATA[<li<?php echo $backup_style; ?>><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>]]></search>
+            <add position="before"><![CDATA[
+            <?php if( $neoseo_broken_links ) { ?><li><a href="<?php echo $neoseo_broken_links; ?>"><?php echo $text_neoseo_broken_links; ?></a></li><?php } ?>
+            ]]></add>
+        </operation>
+    </file>
+
+	    <file path="catalog/controller/error/not_found.php">
+        <operation>
+            <search><![CDATA[$data['header'] = $this->load->controller('common/header');]]></search>
+            <add position="after"> <![CDATA[
+        /* NeoSeo Broken Links - begin */
+		$this->load->model('tool/neoseo_broken_links');
+		$this->model_tool_neoseo_broken_links->save();
+        /* NeoSeo Broken Links - end */
+                ]]></add>
+        </operation>
+    </file>
+</modification>

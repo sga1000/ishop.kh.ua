@@ -1,0 +1,2 @@
+function sendGoogleECommerceTransaction(order){ga('ecommerce:addTransaction',{'id':order['order_id'],'affiliation':order['store_name'],'revenue':order['total'],'shipping':'0','tax':'0'});var product;for(var key in order['products']){product=order['products'][key];ga('ecommerce:addItem',{'id':order['order_id'],'name':product["name"],'sku':product["sku"],'category':product["category"],'price':product["price"],'quantity':product["quantity"]});}
+ga('ecommerce:send');}

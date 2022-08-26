@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Notify When Available</name>
+	<version>1.0</version>
+	<code>neoseo-notify-when-available</code>
+	<author>NeoSeo</author>
+
+	<file path="admin/controller/common/menu.php">
+		<operation>
+			<search><![CDATA[$data['backup']]]></search>
+			<add position="after"><![CDATA[		/* NeoSeo Notify When Available - begin */
+		$data['neoseo_notify_when_available'] = false;
+		if( isset($this->session->data['token']) ) {
+			if( $this->user->hasPermission('access','sale/neoseo_notify_when_available') && $this->config->get("neoseo_notify_when_available_status")){
+				$this->language->load("sale/neoseo_notify_when_available");
+				$data['neoseo_notify_when_available_status'] = $this->config->get("neoseo_notify_when_available_status");
+				$data['text_neoseo_notify_when_available'] = $this->language->get("text_neoseo_notify_when_available");
+				$data['neoseo_notify_when_available'] = $this->url->link('sale/neoseo_notify_when_available', 'token=' .$this->session->data['token'], 'SSL');
+			}
+		}
+		/* NeoSeo Notify When Available  - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="admin/view/template/common/menu.tpl">
+		<operation>
+			<search><![CDATA[<a href="<?php echo $order; ?>"><?php echo $text_order; ?></a>]]></search>
+			<add position="after"><![CDATA[      <!-- NeoSeo Notify When Available - begin -->
+      <?php if( isset($neoseo_notify_when_available_status) && $neoseo_notify_when_available_status == 1) { ?>
+            <li><a href="<?php echo $neoseo_notify_when_available; ?>"><?php echo $text_neoseo_notify_when_available; ?></a></li>
+      <?php } ?>
+      <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/common/header.php">
+		<operation>
+			<search><![CDATA[$data['scripts']]]></search>
+			<add position="before"><![CDATA[		/* NeoSeo Notify When Available - begin */
+		if($this->config->get("neoseo_notify_when_available_status")){
+			$this->document->addScript('catalog/view/javascript/neoseo_notify_when_available.js');
+		}
+		/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/product.php">
+		<operation>
+			<search><![CDATA[$product_info['quantity'] <= 0]]></search>
+			<add position="before"><![CDATA[			/* NeoSeo Notify When Available - begin */
+			$data['neoseo_notify_when_available_status'] = false;
+
+			if( $product_info['quantity'] <= 0 &&
+				$this->config->get("neoseo_notify_when_available_status") &&
+				in_array($product_info['stock_status_id'], $this->config->get("neoseo_notify_when_available_stock_statuses") )
+				)
+			{
+				$data['neoseo_notify_when_available_status'] = true;
+				$this->language->load("module/neoseo_notify_when_available");
+				$this->load->model('module/neoseo_notify_when_available');
+				$data['neoseo_notify_when_available_script'] = html_entity_decode($this->config->get("neoseo_notify_when_available_script"));
+				$data['button_snwa_subscribe'] = $this->language->get('button_subscribe');
+				$data['button_snwa_unsubscribe'] = $this->language->get('button_unsubscribe');
+				$data['snwa_requested'] = false;
+				if(isset($this->request->cookie['neoseo_notify_when_available_email']) ) {
+					$snwa_email = $this->request->cookie['neoseo_notify_when_available_email'];
+					$snwa_product_id = $this->request->get['product_id'];
+					$snwa_request = $this->model_module_neoseo_notify_when_available->getRequest($snwa_email,$snwa_product_id);
+					$data['snwa_requested'] = ($snwa_request && $snwa_request['status'] );
+				}
+				$data['snwa_stock'] = false;
+			}
+			/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$product_option_value_data[] = array(]]></search>
+			<add position="before"><![CDATA[
+			/* NeoSeo Notify When Availabl Begin */
+				if($option_value['subtract'] && $option_value['quantity'] <= 0){
+					$ended = true;
+				}else{
+					$ended = false;
+				}
+			/* NeoSeo Notify When Availabl End */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['product_option_value_id' => $option_value['product_option_value_id'],]]></search>
+			<add position="after"><![CDATA[
+			/* NeoSeo Notify When Availabl Begin */
+			   'ended'					  => $ended,
+			   /* NeoSeo Notify When Availabl End */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[if (!$option_value['subtract'] || ($option_value['quantity'] > 0)) {]]></search>
+			<add position="replace"><![CDATA[
+			/* NeoSeo Notify When Availabl Begin */
+				if (true) {
+			 /* NeoSeo Notify When Availabl End */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[$data['products'][]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Notify When Available - begin */
+				$snwa_status = false;
+				$snwa_requested = false;
+				if( $result['quantity'] <= 0 &&
+					$this->config->get("neoseo_notify_when_available_status") &&
+					in_array($result['stock_status_id'], $this->config->get("neoseo_notify_when_available_stock_statuses") )
+				)
+				{
+					$snwa_status = true;
+					$this->language->load("module/neoseo_notify_when_available");
+					$this->load->model('module/neoseo_notify_when_available');
+					$data['button_snwa_subscribe'] = $this->language->get('button_subscribe');
+					$data['button_snwa_unsubscribe'] = $this->language->get('button_unsubscribe');
+					if(isset($this->request->cookie['neoseo_notify_when_available_email']) ) {
+						$snwa_email = $this->request->cookie['neoseo_notify_when_available_email'];
+						$snwa_request = $this->model_module_neoseo_notify_when_available->getRequest($snwa_email,$result['product_id']);
+						$snwa_requested = ($snwa_request && $snwa_request['status'] );
+					}
+				}
+				/* NeoSeo Notify When Available - end */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'        =>]]></search>
+			<add position="before"><![CDATA[					/* NeoSeo Notify When Available - begin */
+					'snwa_status' => $snwa_status,
+					'snwa_requested' => $snwa_requested,
+					/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/product/{category,manufacturer,search,special}.php">
+		<operation>
+			<search><![CDATA[$data['products'][]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Notify When Available - begin */
+				$snwa_status = false;
+				$snwa_requested = false;
+				if( $result['quantity'] <= 0 &&
+					$this->config->get("neoseo_notify_when_available_status") &&
+					in_array($result['stock_status_id'], $this->config->get("neoseo_notify_when_available_stock_statuses") )
+					)
+				{
+					$snwa_status = true;
+					$this->language->load("module/neoseo_notify_when_available");
+					$this->load->model('module/neoseo_notify_when_available');
+					$data['button_snwa_subscribe'] = $this->language->get('button_subscribe');
+					$data['button_snwa_unsubscribe'] = $this->language->get('button_unsubscribe');
+					if(isset($this->request->cookie['neoseo_notify_when_available_email']) ) {
+						$snwa_email = $this->request->cookie['neoseo_notify_when_available_email'];
+						$snwa_request = $this->model_module_neoseo_notify_when_available->getRequest($snwa_email,$result['product_id']);
+						$snwa_requested = ($snwa_request && $snwa_request['status'] );
+					}
+				}
+				/* NeoSeo Notify When Available - end */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'        =>]]></search>
+			<add position="before"><![CDATA[					/* NeoSeo Notify When Available - begin */
+					'snwa_status' => $snwa_status,
+					'snwa_requested' => $snwa_requested,
+					/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/module/{neoseo_product_list,special,latest,bestseller}.php">
+		<operation>
+			<search><![CDATA[$data['products'][]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Notify When Available - begin */
+				$snwa_status = false;
+				$snwa_requested = false;
+				if( $result['quantity'] <= 0 &&
+					$this->config->get("neoseo_notify_when_available_status") &&
+					in_array($result['stock_status_id'], $this->config->get("neoseo_notify_when_available_stock_statuses") )
+					)
+				{
+					$snwa_status = true;
+					$this->language->load("module/neoseo_notify_when_available");
+					$this->load->model('module/neoseo_notify_when_available');
+					$data['button_snwa_subscribe'] = $this->language->get('button_subscribe');
+					$data['button_snwa_unsubscribe'] = $this->language->get('button_unsubscribe');
+					if(isset($this->request->cookie['neoseo_notify_when_available_email']) ) {
+						$snwa_email = $this->request->cookie['neoseo_notify_when_available_email'];
+						$snwa_request = $this->model_module_neoseo_notify_when_available->getRequest($snwa_email,$result['product_id']);
+						$snwa_requested = ($snwa_request && $snwa_request['status'] );
+					}
+				}
+				/* NeoSeo Notify When Available - end */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'        =>]]></search>
+			<add position="before"><![CDATA[					/* NeoSeo Notify When Available - begin */
+					'snwa_status' => $snwa_status,
+					'snwa_requested' => $snwa_requested,
+					/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/controller/module/featured.php">
+		<operation>
+			<search><![CDATA[$data['products'][]]></search>
+			<add position="before"><![CDATA[				/* NeoSeo Notify When Available - begin */
+				$snwa_status = false;
+				$snwa_requested = false;
+				if( $product_info['quantity'] <= 0 &&
+					$this->config->get("neoseo_notify_when_available_status") &&
+					in_array($product_info['stock_status_id'], $this->config->get("neoseo_notify_when_available_stock_statuses") )
+					)
+				{
+					$snwa_status = true;
+					$this->language->load("module/neoseo_notify_when_available");
+					$this->load->model('module/neoseo_notify_when_available');
+					$data['button_snwa_subscribe'] = $this->language->get('button_subscribe');
+					$data['button_snwa_unsubscribe'] = $this->language->get('button_unsubscribe');
+					if(isset($this->request->cookie['neoseo_notify_when_available_email']) ) {
+						$snwa_email = $this->request->cookie['neoseo_notify_when_available_email'];
+						$snwa_request = $this->model_module_neoseo_notify_when_available->getRequest($snwa_email,$product_info['product_id']);
+						$snwa_requested = ($snwa_request && $snwa_request['status'] );
+					}
+				}
+				/* NeoSeo Notify When Available - end */
+				]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA['href'        =>]]></search>
+			<add position="before"><![CDATA[					/* NeoSeo Notify When Available - begin */
+					'snwa_status' => $snwa_status,
+					'snwa_requested' => $snwa_requested,
+					/* NeoSeo Notify When Available - end */]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/model/catalog/product.php">
+		<operation>
+			<search><![CDATA['stock_status'     => $query->row['stock_status'],]]></search>
+			<ignoreif><![CDATA['stock_status_id'     => $query->row['stock_status_id'],]]></ignoreif>
+			<add position="after"><![CDATA[				/* NeoSeo Notify When Available - begin */
+				'stock_status_id'     => $query->row['stock_status_id'],
+				/* NeoSeo Notify When Available - end */
+			]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/product/product.tpl">
+		<operation>
+			<search><![CDATA[cart.add(]]></search>
+			<add position="before"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php if(!$product['snwa_status']){ ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[cart.add(]]></search>
+			<add position="after"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php } else{ ?>
+                                <button type="button" onclick="showNWA('<?php echo $product['product_id'] ?>',this);" data-checked="<?php echo $product['snwa_requested'] ? 'true' : 'false'; ?>" data-product="<?php echo $product['product_id']?>">
+                                <i class="fa fa-bell"></i>
+                                <span class="hidden-xs hidden-sm hidden-md snwa_button_<?php echo $product['product_id'] ?>"><?php echo $product['snwa_requested'] ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                                </button>
+                        <?php } ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[id="button-cart"]]></search>
+			<add position="before"><![CDATA[
+               <div class="button-group snwa-form" style="<?php echo $neoseo_notify_when_available_status ?  'display:block' : 'display:none' ;?>">
+                 <button id="snwa-send-btn" type="button" onclick="showNWA('<?php echo $product_id ?>',this);" data-checked="<?php echo $snwa_requested ? 'true' : 'false'; ?>" data-option="" data-option-id="" class="btn btn-primary">
+                   <i class="fa fa-bell"></i>
+                   <span class="hidden-xs hidden-sm hidden-md snwa_button_<?php echo $product_id ?>"><?php echo $snwa_requested ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                 </button>
+               </div>
+               <!-- NeoSeo Notify When Available - begin -->
+               <?php if( $neoseo_notify_when_available_status ){ ?>
+                 <?php if($neoseo_notify_when_available_script) { ?>
+                   <?php echo $neoseo_notify_when_available_script; ?>
+                 <?php } ?>
+                 <script>
+                   jQuery(document).ready(function () {
+                     $('#button-cart').hide();
+                     //$('#button-quickorder').closest('.row').hide();
+                     //$('[for=input-quantity').closest('.row').hide();
+                   });
+                 </script>
+               <?php } ?>
+               <!-- NeoSeo Notify When Available - end -->
+		]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[
+
+                <!-- NeoSeo Notify When Available - begin -->
+                <?php if (!empty($snwa_stock)) { ?>
+                <script>
+                $('.option-select').change(function(){
+                  var option_name = $(this).attr('name');
+                  var option_value = $(this).val();
+                    $('#snwa-send-btn').removeData;
+
+                    $('#snwa-send-btn').attr('data-option',option_value);
+                    $('#snwa-send-btn').attr('data-option-id',option_name);
+                  if($(this).find('option:selected').hasClass('steals')){
+
+                    $('#button-cart').hide();
+                    $('.snwa-form').css('display','block');
+                  }else{
+                    $('.snwa-form').hide();
+                    $('#button-cart').show();
+                  }
+                });
+                </script>
+                <?php } ?>
+                                <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[<span class="size-option-block" data-toggle="tooltip" data-value="<?php echo $option_value['product_option_value_id']; ?>"><?php echo $option_value['name']; ?>]]></search>
+			<add position="replace"><![CDATA[
+            <span class="size-option-block<?php echo ($option_value['ended'] ? ' steals' : '');?>" data-toggle="tooltip" data-value="<?php echo $option_value['product_option_value_id']; ?>"><?php echo $option_value['name']; ?>
+]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[<option value="<?php echo $option_value['product_option_value_id']; ?>"><?php echo $option_value['name']; ?>]]></search>
+			<add position="replace"><![CDATA[
+            <option class="option-block<?php echo ($option_value['ended'] ? ' steals' : '');?>" value="<?php echo $option_value['product_option_value_id']; ?>"><?php echo $option_value['name']; ?>
+            ]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[ <select name="option[<?php echo $option['product_option_id']; ?>]" id="input-option<?php echo $option['product_option_id']; ?>" class="form-control">
+        ]]></search>
+			<add position="replace"><![CDATA[
+              <select name="option[<?php echo $option['product_option_id']; ?>]" id="input-option<?php echo $option['product_option_id']; ?>" class="option-select form-control">
+
+            ]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/product/{category,manufacturer_info,manufacturer_list,search}.tpl">
+		<operation>
+			<search><![CDATA[cart.add(]]></search>
+			<add position="before"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php if(!$product['snwa_status']){ ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[wishlist.add(]]></search>
+			<add position="before"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php } else{ ?>
+                                <button type="button" onclick="showNWA('<?php echo $product['product_id'] ?>',this);" data-checked="<?php echo $product['snwa_requested'] ? 'true' : 'false'; ?>" data-product="<?php echo $product['product_id']?>">
+                                <i class="fa fa-bell"></i>
+                                <span class="hidden-xs hidden-sm hidden-md snwa_button_<?php echo $product['product_id'] ?>"><?php echo $product['snwa_requested'] ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                                </button>
+                        <?php } ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/default/template/module/{neoseo_product_list,special,featured,bestseller,latest}.tpl">
+		<operation>
+			<search><![CDATA[cart.add(]]></search>
+			<add position="before"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php if(!$product['snwa_status']){ ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+		<operation>
+			<search><![CDATA[wishlist.add(]]></search>
+			<add position="before"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                        <?php } else{ ?>
+                                <button type="button" onclick="showNWA('<?php echo $product['product_id'] ?>',this);" data-checked="<?php echo $product['snwa_requested'] ? 'true' : 'false'; ?>" data-product="<?php echo $product['product_id']?>">
+                                <i class="fa fa-bell"></i>
+                                <span class="hidden-xs hidden-sm hidden-md snwa_button_<?php echo $product['product_id'] ?>"><?php echo $product['snwa_requested'] ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                                </button>
+                        <?php } ?>
+                        <!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+	</file>
+
+	<file path="catalog/view/theme/neoseo_unistor/template/product/product.tpl">
+
+        <operation>
+            <search><![CDATA[<div class="col-sm-6 col-md-12 button-pcs-box">]]></search>
+            <add position="after"><![CDATA[<!-- NeoSeo Notify When Available - begin -->
+                        <?php if(!$neoseo_notify_when_available_status) { ?>
+                        <!-- NeoSeo Notify When Available - end -->
+					]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search regex="true"><![CDATA[#<span><\?php echo \$button_cart; \?></span>\s*</button>#]]></search>
+            <add position="replace"><![CDATA[
+                <span> <?php echo $button_cart; ?> </span>
+                </button>
+                <!-- NeoSeo Notify When Available - begin -->
+                <?php } ?>
+                <!-- NeoSeo Notify When Available - end -->
+
+                ]]>
+            </add>
+        </operation>
+
+        <operation>
+            <search regex="true"><![CDATA[#</div>\s*<div class="share-and-stock-box">#]]></search>
+            <add position="replace"><![CDATA[
+
+                                    <!-- NeoSeo Notify When Available - begin -->
+                                    <?php if($neoseo_notify_when_available_status) { ?>
+                                    <div class="row">
+                                        <div class="form-group col-sm-12 quick-cart" >
+                                            <div class="button-group snwa-form" >
+                                                <button id="snwa-send-btn" type="button" onclick="showNWA('<?php echo $product_id ?>',this);" data-checked="<?php echo $snwa_requested ? 'true' : 'false'; ?>" data-option="" data-option-id="" class="btn btn-primary">
+                                                    <i class="fa fa-bell"></i>
+                                                    <span class="hidden-xs hidden-sm hidden-md snwa_button_<?php echo $product_id ?>"><?php echo $snwa_requested ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                                                </button>
+                                           </div>
+                                        </div>
+                                    </div>
+                                        <?php if($neoseo_notify_when_available_script) { ?>
+                                            <?php echo $neoseo_notify_when_available_script; ?>
+                                        <?php } ?>
+                                    <?php } ?>
+                                    <!-- NeoSeo Notify When Available - end -->
+
+                    </div>
+                    <div class="share-and-stock-box">
+                ]]>
+            </add>
+        </operation>
+
+		<operation>
+			<search><![CDATA[<?php echo $footer; ?>]]></search>
+			<add position="before"><![CDATA[<!-- NeoSeo Notify When Available - begin -->
+<?php if(isset($snwa_stock) && $snwa_stock){ ?>
+<script>
+   $('.option-select').change(function(){
+       var option_name = $(this).attr('name');
+       var option_value = $(this).val();
+       $('#snwa-send-btn').removeData;
+
+       $('#snwa-send-btn').attr('data-option',option_value);
+       $('#snwa-send-btn').attr('data-option-id',option_name);
+       if($(this).find('option:selected').hasClass('steals')){
+           $('#button-cart').hide();
+           $('.snwa-form').css('display','block');
+       }else{
+           $('.snwa-form').hide();
+           $('#button-cart').show();
+       }
+   });
+</script>
+<?php } ?>
+<!-- NeoSeo Notify When Available - end -->]]></add>
+		</operation>
+	</file>
+
+    <file path="catalog/view/theme/neoseo_unistor/template/product/{category,manufacturer_info,manufacturer_list,search,special}.tpl">
+        <operation>
+            <search><![CDATA[<button class="cart-add-button" type="button" onclick="cart.add]]></search>
+            <add position="before"><![CDATA[                                        <!-- NeoSeo Notify When Available - begin -->
+                                        <?php if(!$product['snwa_status']){ ?>
+                                        <!-- NeoSeo Notify When Available - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<button class="cart-add-button" type="button" onclick="cart.add]]></search>
+            <add position="after"><![CDATA[                                        <!-- NeoSeo Notify When Available - begin -->
+                                        <?php } ?>
+                                        <!-- NeoSeo Notify When Available - end -->]]></add>
+        </operation>
+        <operation>
+            <search><![CDATA[<?php if($neoseo_quick_order_status) { ?>]]></search>
+            <add position="replace"><![CDATA[                        <!-- NeoSeo Notify When Available - begin -->
+                <?php if($product['snwa_status']) { ?>
+                    <a type="button" class="buy-one-click" data-checked="<?php echo $product['snwa_requested'] ? 'true' : 'false'; ?>"  data-product="<?php echo $product['product_id']?>"  onclick="showNWA('<?php echo $product['product_id'] ?>',this);">
+                        <i class="fa fa-bell"></i>
+                        <span><?php echo $product['snwa_requested'] ? $button_snwa_unsubscribe : $button_snwa_subscribe; ?></span>
+                    </a>
+                <?php } elseif($neoseo_quick_order_status) { ?>
+                <!-- NeoSeo Notify When Available - end -->]]></add>
+        </operation>
+    </file>
+
+</modification>

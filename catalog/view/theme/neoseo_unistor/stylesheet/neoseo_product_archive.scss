@@ -1,0 +1,25 @@
+.archive-aditionals {
+    margin-bottom: 30px;
+    border: 1px solid #3c3c3c;
+    padding: 4px;
+
+    > a {
+        font-size: 80%;
+        color: inherit;
+        text-align: center;
+        display: block;
+
+        &:hover {
+
+            img {
+
+                opacity: .8;
+            }
+        }
+    }
+
+    img {
+        width: 100%;
+        max-width: 100%;
+    }
+}

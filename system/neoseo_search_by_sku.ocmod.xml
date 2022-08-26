@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<modification>
+	<name>NeoSeo Search By Sku</name>
+	<version>29</version>
+	<code>neoseo-search-by-sku</code>
+	<author>NeoSeo</author>
+	<link>http://seomag.com.ua/</link>
+
+	<file path="catalog/model/catalog/product.php">
+		<operation>
+			<search><![CDATA[$sql .= " OR LCASE(p.model) = '" . $this->db->escape(utf8_strtolower($data['filter_name'])) . "'";]]></search>
+			<add position="replace"><![CDATA[/* NeoSeo Search By Sku - begin */
+				foreach ($words as $word) {
+					$sql .= " OR p.model LIKE '%" . $this->db->escape($word) . "%'";
+				}
+				/* NeoSeo Search By Sku - end */]]></add>
+		</operation>
+
+		<operation>
+			<search><![CDATA[$sql .= " OR LCASE(p.sku) = '" . $this->db->escape(utf8_strtolower($data['filter_name'])) . "'";]]></search>
+			<add position="replace"><![CDATA[/* NeoSeo Search By Sku - begin */
+				foreach ($words as $word) {
+					$sql .= " OR p.sku LIKE '%" . $this->db->escape($word) . "%'";
+				}
+				/* NeoSeo Search By Sku - end */]]></add>
+		</operation>
+	</file>
+
+</modification>
