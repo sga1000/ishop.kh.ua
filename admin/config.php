@@ -24,8 +24,8 @@ define('DIR_CATALOG', '/home/admdodo/ishop.kh.ua/www/catalog/');
 // DB
 define('DB_DRIVER', 'mysqli');
 define('DB_HOSTNAME', 'admdodo.mysql.tools');
-define('DB_USERNAME', 'admdodo_toys');
-define('DB_PASSWORD', 'e665z8p5');
-define('DB_DATABASE', 'admdodo_toys');
+define('DB_USERNAME', '');
+define('DB_PASSWORD', '');
+define('DB_DATABASE', '');
 define('DB_PORT', '3306');
 define('DB_PREFIX', 'oc_');
